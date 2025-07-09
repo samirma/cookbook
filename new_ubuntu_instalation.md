@@ -1,8 +1,15 @@
-# Ubuntu
+## Ubuntu
 
 ```sh
 sudo apt update
-sudo apt install vim wget curl rsync 
+sudo apt install vim wget curl rsync git
+```
+
+Setup git
+```sh
+git config --global user.name "Jane Doe"  
+git config --global user.email "jane.doe@example.com" 
+
 ```
 
 Install privite key into ~/.ssh
@@ -21,7 +28,7 @@ Brave
 curl -fsS https://dl.brave.com/install.sh | sh
 ```
 
-# Pyenv
+## Pyenv
 https://github.com/pyenv/pyenv
 
 ```sh
@@ -34,14 +41,14 @@ echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bas
 echo 'eval "$(pyenv init - bash)"' >> ~/.bashrc
 ```
 
-# Nvm
+## Nvm
 https://github.com/nvm-sh/nvm
 ```sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 nvm install 20
 ```
 
-# Docker
+## Docker
 
 ```sh
 curl -fsSL https://get.docker.com/ | sh
