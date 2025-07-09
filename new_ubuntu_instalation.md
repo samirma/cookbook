@@ -16,6 +16,10 @@ chmod 600 .ssh/authorized_keys
 ssh-copy-id -i ~/.ssh/id_res.pub -p 22 user@1.1.1.1
 ```
 
+Brave
+```sh
+curl -fsS https://dl.brave.com/install.sh | sh
+```
 
 # Pyenv
 https://github.com/pyenv/pyenv
