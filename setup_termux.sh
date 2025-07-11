@@ -2,13 +2,11 @@
 
 # Update and upgrade packages
 echo "Updating and upgrading packages..."
-pkg update
+pkg update -y && pkg upgrade -y
 
-# Install vim, wget, git, and openssh
-echo "Installing vim, wget, git, and openssh..."
-pkg install vim wget git openssh termux-services  termux-services
-
-sv-enable ssh
+# Install vim, wget, git, openssh, and iproute2
+echo "Installing vim, wget, git, openssh, and iproute2..."
+pkg install vim wget git openssh iproute2  cmake ccache -y
 
 # Setup termux storage
 echo "Setting up Termux storage..."
@@ -20,7 +18,14 @@ sshd
 
 # Display SSH connection command
 echo "SSH server started."
+USER_NAME=$(whoami)
+IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}' || echo "YOUR_DEVICE_IP")
+
 echo "To connect from another computer, use the following command:"
-echo "ssh -p 8022 $(whoami)@$(ifconfig wlan0 | awk '/inet / {print $2}')"
-echo "You might need to replace wlan0 with the correct network interface if Wi-Fi is not used."
-echo "Use 'ip addr' or 'ifconfig' to find your device's IP address if the above command doesn't work."
+if [ "$IP_ADDRESS" == "YOUR_DEVICE_IP" ]; then
+    echo "Could not automatically determine IP address for wlan0."
+    echo "Please find it manually using 'ip addr' or 'ifconfig' and replace YOUR_DEVICE_IP."
+fi
+echo "ssh -p 8022 ${USER_NAME}@${IP_ADDRESS}"
+echo "You might need to replace wlan0 with the correct network interface (e.g., eth0, wlan1) if Wi-Fi is not on wlan0."
+echo "Use 'ip addr' to list all interfaces and their IP addresses."
