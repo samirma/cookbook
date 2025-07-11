@@ -10,39 +10,6 @@ This guide explains how to download and execute the `setup_termux.sh` script on 
 
 ## Steps to Run the Script
 
-1.  **Open Termux**: Launch the Termux app on your Android device.
-
-2.  **Download the script**:
-    You can download the `setup_termux.sh` script using `curl` or `wget`. The script is hosted at `https://github.com/samirma/cookbook/blob/main/setup_termux.sh`. The raw content URL is `https://raw.githubusercontent.com/samirma/cookbook/main/setup_termux.sh`.
-
-    Using `curl`:
-    ```bash
-    curl -fsSL -o setup_termux.sh https://raw.githubusercontent.com/samirma/cookbook/main/setup_termux.sh
-    ```
-
-    Or using `wget`:
-    ```bash
-    wget -O setup_termux.sh https://raw.githubusercontent.com/samirma/cookbook/main/setup_termux.sh
-    ```
-
-3.  **Make the script executable**:
-    After downloading, you need to give the script execution permissions.
-    ```bash
-    chmod +x setup_termux.sh
-    ```
-
-4.  **Run the script**:
-    Now you can execute the script.
-    ```bash
-    ./setup_termux.sh
-    ```
-    The script will then:
-    *   Update and upgrade your Termux packages.
-    *   Install `vim`, `wget`, `git`, and `openssh`.
-    *   Run `termux-setup-storage` (you'll need to grant storage permission when prompted).
-    *   Start the `sshd` server.
-    *   Display the command to connect to your device via SSH.
-
 ## One-liner Command to Download and Run
 
 For convenience, you can download and execute the script in a single command. This is similar to how some other installation scripts (like Docker's) are run.
@@ -56,10 +23,6 @@ Using `curl`:
 curl -fsSL https://raw.githubusercontent.com/samirma/cookbook/main/setup_termux.sh | bash
 ```
 
-Or using `wget`:
-```bash
-wget -qO - https://raw.githubusercontent.com/samirma/cookbook/main/setup_termux.sh | bash
-```
 
 This command fetches the script content and pipes it directly to `bash` for execution.
 
