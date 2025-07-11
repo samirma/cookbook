@@ -2,11 +2,13 @@
 
 # Update and upgrade packages
 echo "Updating and upgrading packages..."
-pkg update -y && pkg upgrade -y
+pkg update
 
 # Install vim, wget, git, and openssh
 echo "Installing vim, wget, git, and openssh..."
-pkg install vim wget git openssh -y
+pkg install vim wget git openssh termux-services  termux-services
+
+sv-enable ssh
 
 # Setup termux storage
 echo "Setting up Termux storage..."
