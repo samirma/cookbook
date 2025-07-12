@@ -15,7 +15,7 @@ CUDA_VISIBLE_DEVICES=0 ./rpc-server -p 50052 -H 0.0.0.0
 
 
 ### LLM Server
-'''sh
+```sh
 ./llama-cli -hf unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:IQ4_XS  -p "Create a python code sempla that uses zeconfig"   -ngl 99   --rpc  192.168.0.44:50052
 ```
 
