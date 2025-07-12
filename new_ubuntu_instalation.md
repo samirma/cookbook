@@ -51,7 +51,7 @@ nvm install 20
 ## Docker
 
 ```sh
-curl -fsSL https://get.docker.com/ | sh
+curl -fsSL https://get.docker.com/ | sudo sh
 ```
 
 
