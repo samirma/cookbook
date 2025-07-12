@@ -9,7 +9,7 @@ echo "Installing vim, wget, git, openssh, and iproute2..."
 pkg install vim wget git openssh iproute2  cmake ccache -y
 
 echo "OpenCL section"
-pkg install clinfo ocl-icd opencl-headers -y
+pkg install clinfo ocl-icd opencl-headers fastfetch. -y
 
 # Setup termux storage
 echo "Setting up Termux storage..."
@@ -21,6 +21,9 @@ sshd
 
 # Display SSH connection command
 echo "SSH server started."
+
+fastfetch
+
 USER_NAME=$(whoami)
 IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}' || echo "YOUR_DEVICE_IP")
 
