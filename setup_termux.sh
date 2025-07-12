@@ -11,11 +11,14 @@ pkg install vim wget git openssh iproute2  cmake ccache libzmq -y
 echo "OpenCL section"
 pkg install clinfo ocl-icd opencl-headers fastfetch -y
 
-pkg install git cmake clang python make opencl-headers vulkan-headers -y
+pkg install vulkan-headers vulkan-loader shaderc -y
 
 # Setup termux storage
 echo "Setting up Termux storage..."
 termux-setup-storage
+
+mkdir ~/storage/dcim/llama.cpp
+ln -s ~/storage/dcim/llama.cpp /data/data/com.termux/files/home/.cache/llama.cpp
 
 # Start the SSH server
 echo "Starting SSH server..."
