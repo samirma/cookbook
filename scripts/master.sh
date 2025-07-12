@@ -3,11 +3,6 @@
 # This script will be run on the master server.
 # It will publish the master's public key using Avahi.
 
-# Check if avahi-publish-service is installed
-if ! command -v avahi-publish-service &> /dev/null; then
-  echo "avahi-publish-service could not be found. Please install avahi-daemon and avahi-utils."
-  exit 1
-fi
 
 # Generate a key pair if one doesn't exist
 if [ ! -f ~/.ssh/id_rsa.pub ]; then
