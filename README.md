@@ -2,30 +2,67 @@
 
 This repository contains scripts and documentation for setting up various environments.
 
-## Available Scripts and Guides
+## Termux Setup
 
-### 1. Termux Setup for Android (`setup_termux.sh`)
+This project provides a set of scripts to automate the setup of a Termux environment on an Android device and connect it to a master server.
 
-The `setup_termux.sh` script is designed to automate the setup of a Termux environment on an Android device. It performs the following actions:
+### `scripts/master.sh`
+
+This script runs on the master server and publishes its SSH public key using Avahi.
+
+**Prerequisites:**
+- A Linux-based OS with `avahi-daemon` and `avahi-utils` installed.
+- The script must be run as root.
+
+**Usage:**
+1.  Open a terminal on the master server.
+2.  Navigate to the `scripts` directory.
+3.  Run the script: `sudo ./master.sh`
+
+The script will publish the master's public key on the local network.
+
+### `scripts/setup_termux.sh`
+
+This script runs on a new Termux instance and performs the following actions:
 - Updates and upgrades all installed packages.
-- Installs essential tools: `vim`, `wget`, `git`, and `openssh`.
-- Sets up Termux storage access by running `termux-setup-storage`.
-- Starts an OpenSSH server (`sshd`) to allow remote connections to your device.
-- Displays the command needed to connect to your device via SSH from another computer.
+- Installs essential tools: `vim`, `wget`, `git`, `openssh`, and `avahi`.
+- Generates an SSH key pair if one doesn't exist.
+- Discovers the master server on the network using Avahi.
+- Retrieves the master's public key and adds it to `~/.ssh/authorized_keys`.
+- Starts the SSH server.
+- Publishes its own SSH service using Avahi, making it discoverable as a "worker".
 
 **How to use this script on Android:**
-For detailed instructions on downloading and running this script within Termux, please refer to the [**`run_script_android.md`**](./run_script_android.md) guide.
+1.  Install Termux on your Android device.
+2.  Open Termux and run the following command to download and execute the script:
 
-### 2. Running `setup_termux.sh` on Android (`run_script_android.md`)
+    ```bash
+    bash <(curl -s https://raw.githubusercontent.com/your_username/your_repository/main/scripts/setup_termux.sh)
+    ```
+    *(Replace `your_username` and `your_repository` with the actual values)*
 
-The [**`run_script_android.md`**](./run_script_android.md) file provides a step-by-step guide on how to:
-- Install Termux on your Android device.
-- Download the `setup_termux.sh` script.
-- Make the script executable.
-- Run the script to set up your environment.
-- It also includes convenient one-liner commands to download and execute the script directly, for users who understand the security implications.
+### Master and Worker Interaction
 
-### 3. Ubuntu Installation Guide (`new_ubuntu_instalation.md`)
+1.  **Master:** The master server runs `master.sh` to advertise its public key.
+2.  **Worker (Termux):** The Termux instance runs `setup_termux.sh` to:
+    -   Find the master's public key and authorize it.
+    -   Advertise its own SSH service.
+3.  **Master (post-setup):** The master can then discover the workers on the network and SSH into them without a password.
+
+### `scripts/discover_workers.sh`
+
+This script, when run on the master server, will discover all available Termux workers on the network and print the full SSH command required to connect to each one.
+
+**Usage:**
+1.  Open a terminal on the master server.
+2.  Navigate to the `scripts` directory.
+3.  Run the script: `./discover_workers.sh`
+
+The output will be a list of SSH commands, one for each discovered worker.
+
+## Other Guides
+
+### Ubuntu Installation Guide (`new_ubuntu_instalation.md`)
 
 The [**`new_ubuntu_instalation.md`**](./new_ubuntu_instalation.md) file contains instructions and guidance for setting up a standard Ubuntu desktop or server environment. This is distinct from the Termux setup, which is specific to Android.
 
