@@ -2,14 +2,14 @@
 
 # Update and upgrade packages
 echo "Updating and upgrading packages..."
-pkg update -y && pkg upgrade -y
+pkg update -y
 
 # Install vim, wget, git, openssh, and iproute2
 echo "Installing vim, wget, git, openssh, and iproute2..."
 pkg install vim wget git openssh iproute2  cmake ccache -y
 
 echo "OpenCL section"
-pkg install clinfo ocl-icd opencl-headers fastfetch. -y
+pkg install clinfo ocl-icd opencl-headers fastfetch -y
 
 # Setup termux storage
 echo "Setting up Termux storage..."
