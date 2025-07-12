@@ -6,7 +6,7 @@ pkg update -y
 
 # Install vim, wget, git, openssh, and iproute2
 echo "Installing vim, wget, git, openssh, and iproute2..."
-pkg install vim wget git openssh iproute2  cmake ccache libzmq  rsync  avahi root-repo -y
+pkg install vim wget git openssh iproute2  cmake ccache libzmq  rsync  avahi root-repo  file -y
 
 echo "OpenCL section"
 pkg install clinfo ocl-icd opencl-headers fastfetch -y
