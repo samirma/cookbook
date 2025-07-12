@@ -11,6 +11,8 @@ pkg install vim wget git openssh iproute2  cmake ccache libzmq -y
 echo "OpenCL section"
 pkg install clinfo ocl-icd opencl-headers fastfetch -y
 
+pkg install git cmake clang python make opencl-headers vulkan-headers -y
+
 # Setup termux storage
 echo "Setting up Termux storage..."
 termux-setup-storage
