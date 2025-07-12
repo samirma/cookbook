@@ -1,10 +1,11 @@
+#!/data/data/com.termux/files/usr/bin/bash
 
 # Start the avahi daemon
 avahi-daemon &
 
 USER_NAME=$(whoami)
 IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}' || echo "YOUR_DEVICE_IP")
-PORT=$(sshd -T | awk '/^port / {print $2}')
+PORT=$(sshd -T | grep "port" | awk '{print $2}' | head -n 1)
 
 if [ "$IP_ADDRESS" = "YOUR_DEVICE_IP" ]; then
     echo "Could not automatically determine IP address for wlan0."
