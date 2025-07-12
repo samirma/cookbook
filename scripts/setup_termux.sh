@@ -45,10 +45,9 @@ fi
 
 # Download and run the publish_worker.sh script
 echo "Downloading and running the publish_worker.sh script..."
-mkdir -p ~/.termux/boot
-wget -O ~/.termux/boot/publish_worker.sh https://raw.githubusercontent.com/samirma/cookbook/main/scripts/publish_worker.sh
-chmod +x ~/.termux/boot/publish_worker.sh
-nohup ~/.termux/boot/publish_worker.sh &
+wget -O ~/publish_worker.sh https://raw.githubusercontent.com/samirma/cookbook/main/scripts/publish_worker.sh
+chmod +x ~/publish_worker.sh
+nohup ~/publish_worker.sh &
 echo "Worker's SSH service is being published in the background."
 
 fastfetch
