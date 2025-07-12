@@ -20,7 +20,7 @@ The raw content URL for the script is `https://raw.githubusercontent.com/samirma
 
 Using `curl`:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/samirma/cookbook/main/setup_termux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/samirma/cookbook/main/scripts/setup_termux.sh | bash
 ```
 
 
