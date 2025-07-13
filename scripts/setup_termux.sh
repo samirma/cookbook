@@ -31,14 +31,25 @@ sshd
 
 # Discover the master server and add its public key
 echo "Discovering master server..."
-MASTER_KEY=$(avahi-browse -r -t _ssh-public-key._tcp | grep "key=" | cut -d'=' -f2- | head -n 1)
+SERVICE_INFO=$(avahi-browse -r -t _http-public-key._tcp | head -n 1)
 
-if [ -n "$MASTER_KEY" ]; then
-  echo "Master server found. Adding public key to authorized_keys."
-  mkdir -p ~/.ssh
-  echo "$MASTER_KEY" >> ~/.ssh/authorized_keys
-  chmod 600 ~/.ssh/authorized_keys
-  echo "Public key added."
+if [ -n "$SERVICE_INFO" ]; then
+  # Extract the IP address and port
+  IP_ADDRESS=$(echo "$SERVICE_INFO" | grep "address" | cut -d'[' -f2 | cut -d']' -f1)
+  PORT=$(echo "$SERVICE_INFO" | grep "port" | cut -d'[' -f2 | cut -d']' -f1)
+
+  # Fetch the public key
+  MASTER_KEY=$(wget -qO- "http://${IP_ADDRESS}:${PORT}/public_key.txt")
+
+  if [ -n "$MASTER_KEY" ]; then
+    echo "Master server found. Adding public key to authorized_keys."
+    mkdir -p ~/.ssh
+    echo "$MASTER_KEY" >> ~/.ssh/authorized_keys
+    chmod 600 ~/.ssh/authorized_keys
+    echo "Public key added."
+  else
+    echo "Could not fetch public key from master server."
+  fi
 else
   echo "Could not find master server. Please ensure the master is running and on the same network."
 fi
