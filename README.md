@@ -6,18 +6,18 @@ This repository contains scripts and documentation for setting up various enviro
 
 This project provides a set of scripts to automate the setup of a Termux environment on an Android device and connect it to a master server.
 
-### `scripts/master.sh`
+### `scripts/master.py`
 
-This script runs on the master server and publishes its SSH public key using Avahi.
+This script runs on the master server and publishes its SSH public key via a temporary HTTP server using Zeroconf.
 
 **Prerequisites:**
-- A Linux-based OS with `avahi-daemon` and `avahi-utils` installed.
-- The script must be run as root.
+- A Linux-based OS with Python 3 and `pip` installed.
+- The `zeroconf` library. Install it with `pip install zeroconf`.
 
 **Usage:**
 1.  Open a terminal on the master server.
 2.  Navigate to the `scripts` directory.
-3.  Run the script: `sudo ./master.sh`
+3.  Run the script: `python3 master.py`
 
 The script will publish the master's public key on the local network.
 
@@ -25,9 +25,9 @@ The script will publish the master's public key on the local network.
 
 This script runs on a new Termux instance and performs the following actions:
 - Updates and upgrades all installed packages.
-- Installs essential tools: `vim`, `wget`, `git`, `openssh`, and `avahi`.
+- Installs essential tools: `vim`, `wget`, `git`, `openssh`, `python` and `zeroconf`.
 - Generates an SSH key pair if one doesn't exist.
-- Discovers the master server on the network using Avahi.
+- Discovers the master server on the network using a Python script with Zeroconf.
 - Retrieves the master's public key and adds it to `~/.ssh/authorized_keys`.
 - Starts the SSH server.
 - Publishes its own SSH service using Avahi, making it discoverable as a "worker".
@@ -43,7 +43,7 @@ This script runs on a new Termux instance and performs the following actions:
 
 ### Master and Worker Interaction
 
-1.  **Master:** The master server runs `master.sh` to advertise its public key.
+1.  **Master:** The master server runs `master.py` to advertise its public key.
 2.  **Worker (Termux):** The Termux instance runs `setup_termux.sh` to:
     -   Find the master's public key and authorize it.
     -   Advertise its own SSH service.
