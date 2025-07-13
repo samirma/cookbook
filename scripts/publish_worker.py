@@ -1,6 +1,7 @@
 import os
 import socket
 import time
+import subprocess
 from zeroconf import ServiceInfo, Zeroconf
 
 def get_ip_address():
@@ -21,8 +22,18 @@ def get_ssh_port():
         port = f.read().strip()
     return int(port) if port.isdigit() else 22
 
+def get_username():
+    """Executes the 'whoami' command to get the current username."""
+    try:
+        # Execute the command and decode the output, removing any trailing newline
+        user_name = subprocess.check_output(['whoami']).decode('utf-8').strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # Fallback if 'whoami' fails for some reason
+        user_name = "unknown"
+    return user_name
+
 def main():
-    user_name = os.environ.get("USER", "unknown")
+    user_name = get_username()
     port = get_ssh_port()
     ip_address = get_ip_address()
     hostname = socket.gethostname()
