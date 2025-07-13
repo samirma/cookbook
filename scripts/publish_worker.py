@@ -25,6 +25,7 @@ def main():
     user_name = os.environ.get("USER", "unknown")
     port = get_ssh_port()
     ip_address = get_ip_address()
+    hostname = socket.gethostname()
 
     zeroconf = Zeroconf()
     service_info = ServiceInfo(
@@ -32,8 +33,8 @@ def main():
         f"Termux Worker {user_name}._ssh._tcp.local.",
         addresses=[socket.inet_aton(ip_address)],
         port=port,
-        properties={'user': user_name, 'worker': ''},
-        server=f"{socket.gethostname()}.local.",
+        properties={'user': user_name, 'hostname': hostname},
+        server=f"{hostname}.local.",
     )
     zeroconf.register_service(service_info)
 
