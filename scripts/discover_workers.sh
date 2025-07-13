@@ -4,12 +4,9 @@
 # It will discover workers on the network and print the SSH command to connect to them.
 
 echo "Discovering workers..."
-avahi-browse -r -t _ssh._tcp | grep "Termux Worker" | while read line; do
-  if [[ $line == "="* ]]; then
-    SERVICE_NAME=$(echo "$line" | grep "hostname" | cut -d'=' -f2 | cut -d'[' -f1)
-    IP_ADDRESS=$(echo "$line" | grep "address" | cut -d'=' -f2 | cut -d'[' -f2 | cut -d']' -f1)
-    PORT=$(echo "$line" | grep "port" | cut -d'=' -f2 | cut -d'[' -f2 | cut -d']' -f1)
-    USER=$(echo "$line" | grep "user" | cut -d'=' -f2)
-    echo "ssh -p $PORT $USER@$IP_ADDRESS"
+avahi-browse -r -p -t _ssh._tcp | grep "Termux Worker" | while IFS=';' read -r _ interface _ name type _ host ip port txt; do
+  if [ "$name" != "" ]; then
+      user=$(echo "$txt" | grep -o 'user=[^"]*' | cut -d= -f2)
+      echo "ssh -p $port $user@$ip"
   fi
 done
