@@ -6,7 +6,8 @@ pkg update -y
 
 # Install vim, wget, git, openssh, and iproute2
 echo "Installing vim, wget, git, openssh, and iproute2..."
-pkg install vim wget git openssh iproute2  cmake ccache libzmq  rsync  avahi root-repo  file -y
+pkg install vim wget git openssh iproute2 python python-pip cmake ccache libzmq  rsync  root-repo  file -y
+pip install zeroconf
 
 echo "OpenCL section"
 pkg install clinfo ocl-icd opencl-headers fastfetch -y
@@ -29,16 +30,27 @@ fi
 echo "Starting SSH server..."
 sshd
 
+# Download the discovery script
+wget -O ~/discover_master.py https://raw.githubusercontent.com/samirma/cookbook/main/scripts/discover_master.py
+chmod +x ~/discover_master.py
+
 # Discover the master server and add its public key
 echo "Discovering master server..."
-MASTER_KEY=$(avahi-browse -r -t _ssh-public-key._tcp | grep "key=" | cut -d'=' -f2- | head -n 1)
+MASTER_URL=$(python ~/discover_master.py)
 
-if [ -n "$MASTER_KEY" ]; then
-  echo "Master server found. Adding public key to authorized_keys."
-  mkdir -p ~/.ssh
-  echo "$MASTER_KEY" >> ~/.ssh/authorized_keys
-  chmod 600 ~/.ssh/authorized_keys
-  echo "Public key added."
+if [ -n "$MASTER_URL" ]; then
+  # Fetch the public key
+  MASTER_KEY=$(wget -qO- "$MASTER_URL")
+
+  if [ -n "$MASTER_KEY" ]; then
+    echo "Master server found. Adding public key to authorized_keys."
+    mkdir -p ~/.ssh
+    echo "$MASTER_KEY" >> ~/.ssh/authorized_keys
+    chmod 600 ~/.ssh/authorized_keys
+    echo "Public key added."
+  else
+    echo "Could not fetch public key from master server."
+  fi
 else
   echo "Could not find master server. Please ensure the master is running and on the same network."
 fi
