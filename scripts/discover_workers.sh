@@ -1,12 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 
-# This script will be run on the master server.
-# It will discover workers on the network and print the SSH command to connect to them.
 
 echo "Discovering workers..."
-avahi-browse -r -p -t _ssh._tcp | grep "Termux Worker" | while IFS=';' read -r _ interface _ name type _ host ip port txt; do
-  if [ "$name" != "" ]; then
-      user=$(echo "$txt" | grep -o 'user=[^"]*' | cut -d= -f2)
+# Use the parsable format and filter for "Termux Worker"
+avahi-browse -r -p -t _ssh._tcp | grep ";Termux Worker" | while IFS=';' read -r _ interface _ name _ _ host ip port txt; do
+  # Ensure the name field is not empty
+  if [ -n "$name" ]; then
+    # Use sed to reliably extract the user from the text field
+    user=$(echo "$txt" | sed -n 's/.*user=\([^"]*\).*/\1/p')
+    if [ -n "$user" ]; then
       echo "ssh -p $port $user@$ip"
+    fi
   fi
 done
