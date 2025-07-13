@@ -4,9 +4,22 @@ import time
 import subprocess
 from zeroconf import ServiceInfo, Zeroconf
 
+def get_ip_address():
+    """Gets the primary IP address of the device."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Doesn't even have to be a reachable address
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1' # Fallback to loopback address
+    finally:
+        s.close()
+    return IP
 
 def get_ssh_port():
-    # This is a bit of a hack, but it's the most reliable way to get the SSH port in Termux
+    """Gets the SSH port from the sshd configuration."""
+    # This is a bit of a hack, but it's a reliable way to get the SSH port in Termux
     with os.popen("sshd -T | grep 'port' | awk '{print $2}' | head -n 1") as f:
         port = f.read().strip()
     return int(port) if port.isdigit() else 22
@@ -24,18 +37,25 @@ def get_username():
 def main():
     user_name = get_username()
     port = get_ssh_port()
+    ip_address = get_ip_address()
+    hostname = socket.gethostname() # Get the device's hostname
 
     zeroconf = Zeroconf()
+
     service_info = ServiceInfo(
         "_ssh._tcp.local.",
         f"Termux Worker {user_name}._ssh._tcp.local.",
+        # You must provide the IP address for the service
+        addresses=[socket.inet_aton(ip_address)],
         port=port,
         properties={'user': user_name},
+        # Use the hostname variable defined above
         server=f"{hostname}.local.",
     )
+
     zeroconf.register_service(service_info)
 
-    print(f"Publishing SSH service for user {user_name} on port {port}")
+    print(f"Publishing SSH service for {user_name}@{ip_address} on port {port}")
     print("Press Ctrl+C to stop.")
 
     try:
@@ -44,6 +64,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        print("Stopping service...")
         zeroconf.unregister_service(service_info)
         zeroconf.close()
 
