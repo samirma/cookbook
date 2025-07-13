@@ -41,7 +41,7 @@ MASTER_URL=$(python ~/discover_master.py)
 if [ -n "$MASTER_URL" ]; then
   # Fetch the public key
   MASTER_KEY=$(wget -qO- "$MASTER_URL")
-
+  
   if [ -n "$MASTER_KEY" ]; then
     echo "Master server found. Adding public key to authorized_keys."
     mkdir -p ~/.ssh
