@@ -25,9 +25,9 @@ The script will publish the master's public key on the local network.
 
 This script runs on a new Termux instance and performs the following actions:
 - Updates and upgrades all installed packages.
-- Installs essential tools: `vim`, `wget`, `git`, `openssh`, and `avahi`.
+- Installs essential tools: `vim`, `wget`, `git`, `openssh`, `python` and `zeroconf`.
 - Generates an SSH key pair if one doesn't exist.
-- Discovers the master server on the network using Avahi.
+- Discovers the master server on the network using a Python script with Zeroconf.
 - Retrieves the master's public key and adds it to `~/.ssh/authorized_keys`.
 - Starts the SSH server.
 - Publishes its own SSH service using Avahi, making it discoverable as a "worker".
