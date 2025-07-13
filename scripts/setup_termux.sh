@@ -55,11 +55,11 @@ else
   echo "Could not find master server. Please ensure the master is running and on the same network."
 fi
 
-# Download and run the publish_worker.sh script
-echo "Downloading and running the publish_worker.sh script..."
-wget -O ~/publish_worker.sh https://raw.githubusercontent.com/samirma/cookbook/main/scripts/publish_worker.sh
-chmod +x ~/publish_worker.sh
-nohup ~/publish_worker.sh &
+# Download and run the publish_worker.py script
+echo "Downloading and running the publish_worker.py script..."
+wget -O ~/publish_worker.py https://raw.githubusercontent.com/samirma/cookbook/main/scripts/publish_worker.py
+chmod +x ~/publish_worker.py
+nohup python ~/publish_worker.py &
 echo "Worker's SSH service is being published in the background."
 
 fastfetch
