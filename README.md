@@ -42,10 +42,7 @@ This script runs on a new Termux instance and performs the following actions:
     *(Replace `your_username` and `your_repository` with the actual values)*
 
 ### Master and Worker Interaction
-0.  **Precondition:** Pre condition to enable master
-    ```bash
-sudo apt install python3-zeroconf -y
-    ```
+
 1.  **Master:** The master server runs `master.py` to advertise its public key.
 2.  **Worker (Termux):** The Termux instance runs `setup_termux.sh` to:
     -   Find the master's public key and authorize it.
