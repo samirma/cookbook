@@ -7,12 +7,13 @@ pkg update -y
 # Install vim, wget, git, openssh, and iproute2
 echo "Installing vim, wget, git, openssh, and iproute2..."
 pkg install vim wget git openssh iproute2 python python-pip cmake ccache libzmq  rsync  root-repo  file -y
-pip install zeroconf
 
 echo "OpenCL section"
 pkg install clinfo ocl-icd opencl-headers fastfetch -y
 
 pkg install vulkan-headers vulkan-loader shaderc -y
+
+pip install zeroconf
 
 # Setup termux storage
 echo "Setting up Termux storage..."
