@@ -19,7 +19,6 @@ def get_ip_address():
 
 def get_ssh_port():
     """Gets the SSH port from the sshd configuration."""
-    # This is a bit of a hack, but it's a reliable way to get the SSH port in Termux
     with os.popen("sshd -T | grep 'port' | awk '{print $2}' | head -n 1") as f:
         port = f.read().strip()
     return int(port) if port.isdigit() else 22
@@ -27,10 +26,8 @@ def get_ssh_port():
 def get_username():
     """Executes the 'whoami' command to get the current username."""
     try:
-        # Execute the command and decode the output, removing any trailing newline
         user_name = subprocess.check_output(['whoami']).decode('utf-8').strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        # Fallback if 'whoami' fails for some reason
         user_name = "unknown"
     return user_name
 
@@ -38,24 +35,25 @@ def main():
     user_name = get_username()
     port = get_ssh_port()
     ip_address = get_ip_address()
-    hostname = socket.gethostname() # Get the device's hostname
+    hostname = socket.gethostname()
 
     zeroconf = Zeroconf()
 
+    # Use a hyphen in the service name instead of a space
+    service_name = f"Termux-Worker-{user_name}._ssh._tcp.local."
+
     service_info = ServiceInfo(
         "_ssh._tcp.local.",
-        f"Termux Worker {user_name}._ssh._tcp.local.",
-        # You must provide the IP address for the service
+        service_name,
         addresses=[socket.inet_aton(ip_address)],
         port=port,
         properties={'user': user_name},
-        # Use the hostname variable defined above
         server=f"{hostname}.local.",
     )
 
     zeroconf.register_service(service_info)
 
-    print(f"Publishing SSH service for {user_name}@{ip_address} on port {port}")
+    print(f"Publishing SSH service '{service_name}' for {user_name}@{ip_address} on port {port}")
     print("Press Ctrl+C to stop.")
 
     try:
