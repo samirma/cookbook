@@ -26,22 +26,6 @@ clinfo ocl-icd opencl-headers fastfetch vulkan-headers vulkan-loader shaderc -y
 print_message "Installing Python dependencies..."
 pip install zeroconf
 
-print_message "Setting up Termux storage..."
-termux-setup-storage
-
-# Create a symlink for llama.cpp cache
-mkdir -p ~/storage/dcim/llama.cpp
-ln -sfn ~/storage/dcim/llama.cpp /data/data/com.termux/files/home/.cache/llama.cpp
-
-# --- SSH Setup ---
-
-print_message "Setting up SSH..."
-if [ ! -f ~/.ssh/id_rsa.pub ]; then
-  echo "Generating SSH key pair..."
-  ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
-else
-  echo "SSH key pair already exists."
-fi
 
 print_message "Starting SSH server..."
 sshd
@@ -78,6 +62,23 @@ wget -O ~/publish_worker.py https://raw.githubusercontent.com/samirma/cookbook/m
 chmod +x ~/publish_worker.py
 nohup python ~/publish_worker.py &
 echo "Worker's SSH service is being published in the background."
+
+print_message "Setting up Termux storage..."
+termux-setup-storage
+
+# Create a symlink for llama.cpp cache
+mkdir -p ~/storage/dcim/llama.cpp
+ln -sfn ~/storage/dcim/llama.cpp /data/data/com.termux/files/home/.cache/llama.cpp
+
+# --- SSH Setup ---
+
+print_message "Setting up SSH..."
+if [ ! -f ~/.ssh/id_rsa.pub ]; then
+  echo "Generating SSH key pair..."
+  ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+else
+  echo "SSH key pair already exists."
+fi
 
 # --- Final Instructions ---
 
