@@ -16,11 +16,12 @@ print_message() {
 # --- Main Script ---
 
 print_message "Updating and upgrading packages..."
-pkg update -y
+apt-get update -y
 apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
 
 print_message "Installing all required packages..."
-pkg install vim wget git openssh python python-pip -y
+apt-get install vim wget git openssh iproute2 python python-pip cmake ccache libzmq rsync root-repo file \
+clinfo ocl-icd opencl-headers fastfetch vulkan-headers vulkan-loader shaderc -y
 
 print_message "Installing Python dependencies..."
 pip install zeroconf
@@ -62,3 +63,40 @@ chmod +x ~/publish_worker.py
 nohup python ~/publish_worker.py &
 echo "Worker's SSH service is being published in the background."
 
+print_message "Setting up Termux storage..."
+termux-setup-storage
+
+# Create a symlink for llama.cpp cache
+mkdir -p ~/storage/dcim/llama.cpp
+ln -sfn ~/storage/dcim/llama.cpp /data/data/com.termux/files/home/.cache/llama.cpp
+
+# --- SSH Setup ---
+
+print_message "Setting up SSH..."
+if [ ! -f ~/.ssh/id_rsa.pub ]; then
+  echo "Generating SSH key pair..."
+  ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+else
+  echo "SSH key pair already exists."
+fi
+
+# --- Final Instructions ---
+
+print_message "Setup Complete!"
+fastfetch
+
+# Get device IP address
+IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+USER_NAME=$(whoami)
+PORT=8022 # Default Termux SSH port
+
+print_message "To connect to this Termux instance from another computer, use:"
+if [ -n "$IP_ADDRESS" ]; then
+    echo
+    echo "ssh -p ${PORT} ${USER_NAME}@${IP_ADDRESS}"
+    echo
+else
+    echo "Could not automatically determine the IP address for wlan0." >&2
+    echo "Please find it manually using 'ip addr' or 'ifconfig' and connect." >&2
+fi
+echo "Note: If you are not using Wi-Fi, you might need to find the IP for a different network interface (e.g., eth0)."
