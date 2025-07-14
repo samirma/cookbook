@@ -17,7 +17,7 @@ print_message() {
 
 print_message "Updating and upgrading packages..."
 pkg update -y
-#apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
+apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
 
 print_message "Installing all required packages..."
 pkg install vim wget git openssh iproute2 python python-pip cmake ccache libzmq rsync root-repo file \
