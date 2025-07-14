@@ -63,13 +63,6 @@ chmod +x ~/publish_worker.py
 nohup python ~/publish_worker.py &
 echo "Worker's SSH service is being published in the background."
 
-print_message "Setting up Termux storage..."
-termux-setup-storage
-
-# Create a symlink for llama.cpp cache
-mkdir -p ~/storage/dcim/llama.cpp
-ln -sfn ~/storage/dcim/llama.cpp /data/data/com.termux/files/home/.cache/llama.cpp
-
 # --- SSH Setup ---
 
 print_message "Setting up SSH..."
