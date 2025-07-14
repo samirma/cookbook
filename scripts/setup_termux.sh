@@ -1,75 +1,101 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-# Update and upgrade packages
-echo "Updating and upgrading packages..."
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# --- Functions ---
+
+# Function to print a formatted message
+print_message() {
+  echo
+  echo "--------------------------------------------------"
+  echo "$1"
+  echo "--------------------------------------------------"
+}
+
+# --- Main Script ---
+
+print_message "Updating and upgrading packages..."
 pkg update -y
+pkg upgrade -y
 
-# Install vim, wget, git, openssh, and iproute2
-echo "Installing vim, wget, git, openssh, and iproute2..."
-pkg install vim wget git openssh iproute2 python python-pip cmake ccache libzmq  rsync  root-repo  file -y
+print_message "Installing all required packages..."
+pkg install vim wget git openssh iproute2 python python-pip cmake ccache libzmq rsync root-repo file \
+clinfo ocl-icd opencl-headers fastfetch vulkan-headers vulkan-loader shaderc -y
 
-echo "OpenCL section"
-pkg install clinfo ocl-icd opencl-headers fastfetch -y
-
-pkg install vulkan-headers vulkan-loader shaderc -y
-
+print_message "Installing Python dependencies..."
 pip install zeroconf
 
-# Setup termux storage
-echo "Setting up Termux storage..."
+print_message "Setting up Termux storage..."
 termux-setup-storage
 
-mkdir ~/storage/dcim/llama.cpp
-ln -s ~/storage/dcim/llama.cpp /data/data/com.termux/files/home/.cache/llama.cpp
+# Create a symlink for llama.cpp cache
+mkdir -p ~/storage/dcim/llama.cpp
+ln -sfn ~/storage/dcim/llama.cpp /data/data/com.termux/files/home/.cache/llama.cpp
 
-# Generate an SSH key pair if one doesn't exist
+# --- SSH Setup ---
+
+print_message "Setting up SSH..."
 if [ ! -f ~/.ssh/id_rsa.pub ]; then
+  echo "Generating SSH key pair..."
   ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+else
+  echo "SSH key pair already exists."
 fi
 
-# Start the SSH server
-echo "Starting SSH server..."
+print_message "Starting SSH server..."
 sshd
 
-# Download the discovery script
+# --- Master Discovery and Connection ---
+
+print_message "Discovering master server..."
 wget -O ~/discover_master.py https://raw.githubusercontent.com/samirma/cookbook/main/scripts/discover_master.py
 chmod +x ~/discover_master.py
 
-# Discover the master server and add its public key
-echo "Discovering master server..."
 MASTER_URL=$(python ~/discover_master.py)
 
 if [ -n "$MASTER_URL" ]; then
-  # Fetch the public key
+  echo "Fetching public key from master..."
   MASTER_KEY=$(wget -qO- "$MASTER_URL")
-  
+
   if [ -n "$MASTER_KEY" ]; then
-    echo "Master server found. Adding public key to authorized_keys."
+    print_message "Adding master's public key to authorized_keys..."
     mkdir -p ~/.ssh
     echo "$MASTER_KEY" >> ~/.ssh/authorized_keys
     chmod 600 ~/.ssh/authorized_keys
-    echo "Public key added."
+    echo "Public key added successfully."
   else
-    echo "Could not fetch public key from master server."
+    echo "Could not fetch public key from master server." >&2
   fi
 else
-  echo "Could not find master server. Please ensure the master is running and on the same network."
+  echo "Could not find master server. Please ensure the master is running and on the same network." >&2
 fi
 
-# Download and run the publish_worker.py script
-echo "Downloading and running the publish_worker.py script..."
+# --- Worker Publishing ---
+
+print_message "Publishing worker service..."
 wget -O ~/publish_worker.py https://raw.githubusercontent.com/samirma/cookbook/main/scripts/publish_worker.py
 chmod +x ~/publish_worker.py
 nohup python ~/publish_worker.py &
 echo "Worker's SSH service is being published in the background."
 
+# --- Final Instructions ---
+
+print_message "Setup Complete!"
 fastfetch
 
-echo "To connect from another computer, use the following command:"
-if [ "$IP_ADDRESS" == "YOUR_DEVICE_IP" ]; then
-    echo "Could not automatically determine IP address for wlan0."
-    echo "Please find it manually using 'ip addr' or 'ifconfig' and replace YOUR_DEVICE_IP."
+# Get device IP address
+IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+USER_NAME=$(whoami)
+PORT=8022 # Default Termux SSH port
+
+print_message "To connect to this Termux instance from another computer, use:"
+if [ -n "$IP_ADDRESS" ]; then
+    echo
+    echo "ssh -p ${PORT} ${USER_NAME}@${IP_ADDRESS}"
+    echo
+else
+    echo "Could not automatically determine the IP address for wlan0." >&2
+    echo "Please find it manually using 'ip addr' or 'ifconfig' and connect." >&2
 fi
-echo "ssh -p ${PORT} ${USER_NAME}@${IP_ADDRESS}"
-echo "You might need to replace wlan0 with the correct network interface (e.g., eth0, wlan1) if Wi-Fi is not on wlan0."
-echo "Use 'ip addr' to list all interfaces and their IP addresses."
+echo "Note: If you are not using Wi-Fi, you might need to find the IP for a different network interface (e.g., eth0)."
