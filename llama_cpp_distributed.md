@@ -8,6 +8,30 @@ cmake -B build -DGGML_VULKAN=ON -DGGML_RPC=ON  -DBUILD_SHARED_LIBS=OFF  -DGGML_C
 cmake --build build --config Release -j $(nproc)
 ```
 
+Build in Ubuntu and send to termux
+```sh
+echo "Cloning llama.cpp repository..."
+git clone https://github.com/ggml-org/llama.cpp
+cd llama.cpp
+
+# --- 3. Configuring the Build (Vulkan GPU) ---
+echo "Configuring build with CMake for Vulkan..."
+cmake -B build -DGGML_VULKAN=ON -DGGML_RPC=ON -DBUILD_SHARED_LIBS=OFF
+
+# --- 4. Compiling the Code ---
+echo "Compiling the source code..."
+cmake --build build --config Release -j $(nproc)
+
+# --- 5. Deploying with rsync ---
+echo "Deploying build directory to remote server..."
+# This command syncs the 'build' directory to a 'llama_build' directory
+# in the home folder on the remote server.
+rsync -avz -e 'ssh -p 8022' build/ u0_a1228@192.168.0.149:~/llama_build/
+
+echo "Build and deployment complete!"
+```
+
+
 ### Worker
 ```sh
 CUDA_VISIBLE_DEVICES=0 ./rpc-server -p 50052 -H 0.0.0.0
