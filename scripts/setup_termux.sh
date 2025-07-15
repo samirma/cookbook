@@ -89,7 +89,7 @@ fi
 echo "Note: If you are not using Wi-Fi, you might need to find the IP for a different network interface (e.g., eth0)."
 
 
-https://raw.githubusercontent.com/samirma/cookbook/main/scripts/run_termux.sh
+wget https://raw.githubusercontent.com/samirma/cookbook/main/scripts/run_termux.sh
 
 echo "sh run_termux.sh" > ~/.bashrc
 
