@@ -59,9 +59,6 @@ fi
 
 print_message "Publishing worker service..."
 wget -O ~/publish_worker.py https://raw.githubusercontent.com/samirma/cookbook/main/scripts/publish_worker.py
-chmod +x ~/publish_worker.py
-nohup python ~/publish_worker.py &
-echo "Worker's SSH service is being published in the background."
 
 # --- SSH Setup ---
 
@@ -74,9 +71,6 @@ else
 fi
 
 # --- Final Instructions ---
-
-print_message "Setup Complete!"
-fastfetch
 
 # Get device IP address
 IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
@@ -93,3 +87,11 @@ else
     echo "Please find it manually using 'ip addr' or 'ifconfig' and connect." >&2
 fi
 echo "Note: If you are not using Wi-Fi, you might need to find the IP for a different network interface (e.g., eth0)."
+
+
+https://raw.githubusercontent.com/samirma/cookbook/main/scripts/run_termux.sh
+
+echo "sh run_termux.sh" > ~/.bashrc
+
+sh ~/.bashrc
+
