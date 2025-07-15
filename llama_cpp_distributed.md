@@ -16,11 +16,11 @@ cd llama.cpp
 
 # --- 3. Configuring the Build (Vulkan GPU) ---
 echo "Configuring build with CMake for Vulkan..."
-cmake -B build -DGGML_VULKAN=ON -DGGML_RPC=ON -DBUILD_SHARED_LIBS=OFF
+cmake -B termux_build -DGGML_VULKAN=ON -DGGML_RPC=ON -DBUILD_SHARED_LIBS=OFF
 
 # --- 4. Compiling the Code ---
 echo "Compiling the source code..."
-cmake --build build --config Release -j $(nproc)
+cmake --build termux_build --config Release -j $(nproc)
 
 # --- 5. Deploying with rsync ---
 echo "Deploying build directory to remote server..."
