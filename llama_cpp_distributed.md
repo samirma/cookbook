@@ -45,5 +45,6 @@ CUDA_VISIBLE_DEVICES=0 ./rpc-server -p 50052 -H 0.0.0.0
 ### LLM Server
 ```sh
 ./llama-cli -hf unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:IQ4_XS  -p "Create a python code sempla that uses zeconfig"   -ngl 99   --rpc  192.168.0.44:50052
+./lama-server -m models/gemma-3-27b-it-Q4_K_M.gguf --host 0.0.0.0 --port 8080 --ctx-size 60000 --n-gpu-layers 7 --chat-template chatml --no-prefill-assistant --batch-size 1280 --ubatch-size  128
 ```
 
