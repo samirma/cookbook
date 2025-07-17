@@ -4,7 +4,7 @@
 git clone https://github.com/ggml-org/llama.cpp
 cd llama.cpp
 
-cmake -B build -DGGML_VULKAN=ON -DGGML_RPC=ON  -DBUILD_SHARED_LIBS=OFF  -DGGML_CUDA=ON
+cmake -B build -DGGML_VULKAN=OFF -DGGML_RPC=ON  -DBUILD_SHARED_LIBS=OFF  -DGGML_CUDA=ON
 cmake --build build --config Release -j $(nproc)
 ```
 
