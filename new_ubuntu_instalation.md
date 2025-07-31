@@ -3,6 +3,7 @@
 ```sh
 sudo apt update
 sudo apt install vim wget curl rsync git
+sudo apt install ubuntu-restricted-extras
 ```
 
 Setup git
