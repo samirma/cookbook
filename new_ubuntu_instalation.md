@@ -9,7 +9,8 @@ sudo apt install ubuntu-restricted-extras
 Setup git
 ```sh
 git config --global user.name "Jane Doe"  
-git config --global user.email "jane.doe@example.com" 
+git config --global user.email "jane.doe@example.com"
+git config --global core.editor "vim"
 
 ```
 
