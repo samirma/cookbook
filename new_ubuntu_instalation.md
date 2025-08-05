@@ -29,6 +29,12 @@ Brave
 ```sh
 curl -fsS https://dl.brave.com/install.sh | sh
 ```
+## Android
+
+```sh
+echo 'export PATH="$PATH:/home/samir/Android/Sdk/platform-tools"' >> ~/.bashrc
+
+```
 
 ## Pyenv
 https://github.com/pyenv/pyenv
