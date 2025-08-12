@@ -48,3 +48,12 @@ CUDA_VISIBLE_DEVICES=0 ./rpc-server -p 50052 -H 0.0.0.0
 ./lama-server -m models/gemma-3-27b-it-Q4_K_M.gguf --host 0.0.0.0 --port 8080 --ctx-size 60000 --n-gpu-layers 7 --chat-template chatml --no-prefill-assistant --batch-size 1280 --ubatch-size  128
 ```
 
+### Curl Test
+```sh
+curl -X POST http://localhost:8080/v1/chat/completions     -H "Content-Type: application/json"     -d '{
+        "messages": [
+            {"role": "user", "content": "Hello! How are you today?"}
+        ],
+        "temperature": 0.7
+    }'
+```
