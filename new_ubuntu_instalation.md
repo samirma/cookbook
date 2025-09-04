@@ -66,3 +66,10 @@ curl -fsSL https://get.docker.com/ | sudo sh
 ```sh
 sudo usermod -aG docker $USER
 ```
+
+## Ubuntu GUI
+Enable seconds in the ubuntu clock
+```sh
+gsettings set org.gnome.desktop.interface clock-show-seconds true
+```
+
