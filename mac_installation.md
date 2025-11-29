@@ -13,6 +13,7 @@ https://github.com/ohmyzsh/ohmyzsh
 ```sh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
+ ~/.zshrc -> ZSH_THEME="risto"
 
 ### Itsycal (Mowglii)
 https://mowglii.com/itsycal/
