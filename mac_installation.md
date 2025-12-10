@@ -29,6 +29,14 @@ https://github.com/newmarcel/KeepingYouAwake
 brew install --cask keepingyouawake
 ```
 
+### Sudo TouchID
+https://github.com/artginzburg/sudo-touchid
+
+```sh
+brew install artginzburg/tap/sudo-touchid
+sudo-touchid
+```
+
 ### System Defaults
 Enable the sound icon in the menu bar:
 ```sh
