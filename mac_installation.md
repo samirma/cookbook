@@ -37,13 +37,12 @@ brew install artginzburg/tap/sudo-touchid
 sudo-touchid
 ```
 
-### System Defaults
-Enable the sound icon in the menu bar:
+### Enable the sound icon in the menu bar
 ```sh
 defaults -currentHost write com.apple.controlcenter Sound -int 18
 ```
 
-### To set the Dock to automatically hide in macO
+### To set the Dock to automatically hide
 ```sh
 defaults write com.apple.dock autohide -bool true
 killall Dock
