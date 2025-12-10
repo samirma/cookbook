@@ -28,3 +28,9 @@ https://github.com/newmarcel/KeepingYouAwake
 ```sh
 brew install --cask keepingyouawake
 ```
+
+### System Defaults
+Enable the sound icon in the menu bar:
+```sh
+defaults -currentHost write com.apple.controlcenter Sound -int 18
+```
