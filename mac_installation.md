@@ -47,3 +47,10 @@ defaults -currentHost write com.apple.controlcenter Sound -int 18
 defaults write com.apple.dock autohide -bool true
 killall Dock
 ```
+
+
+### Java 21
+```sh
+brew install openjdk@21
+brew link --overwrite openjdk@21
+```
