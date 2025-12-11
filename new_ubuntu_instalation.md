@@ -19,17 +19,6 @@ git config --global core.editor "vim"
 
 ```
 
-Install privite key into ~/.ssh
-
-```sh
-chmod 700 .ssh
-chmod 600 .ssh/authorized_keys
-```
-
-```sh
-ssh-copy-id -i ~/.ssh/id_res.pub -p 22 user@1.1.1.1
-```
-
 Brave
 ```sh
 curl -fsS https://dl.brave.com/install.sh | sh
