@@ -53,4 +53,9 @@ killall Dock
 ```sh
 brew install openjdk@21
 brew link --overwrite openjdk@21
+
+echo 'export JAVA_HOME="$(brew --prefix openjdk@21)"' >> ~/.zshrc
+echo 'export PATH="$JAVA_HOME/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
 ```
