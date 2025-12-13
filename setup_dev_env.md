@@ -43,12 +43,6 @@ source ~/.zshrc
 **Ubuntu:**
 ```sh
 sudo apt install openjdk-21-jdk
-```
-
-To set `JAVA_HOME` permanently (optional but recommended):
-```bash
-# Check where java is
-# update-alternatives --list java
 
 # Add to ~/.bashrc
 echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.bashrc
