@@ -4,7 +4,7 @@
 https://brew.sh/
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 ### Oh My Zsh
@@ -49,13 +49,4 @@ killall Dock
 ```
 
 
-### Java 21
-```sh
-brew install openjdk@21
-brew link --overwrite openjdk@21
 
-echo 'export JAVA_HOME="$(brew --prefix openjdk@21)"' >> ~/.zshrc
-echo 'export PATH="$JAVA_HOME/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
-```
