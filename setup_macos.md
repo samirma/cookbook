@@ -49,4 +49,11 @@ killall Dock
 ```
 
 
+### Disable the Control + Space shortcut to switch between input sources (keyboard languages)
+```sh
+plutil -replace AppleSymbolicHotKeys.60.enabled -bool NO ~/Library/Preferences/com.apple.symbolichotkeys.plist
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+```
+
+
 
