@@ -93,6 +93,19 @@ https://github.com/astral-sh/uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+Bash completion
+**macOS:**
+```sh
+echo 'eval "$(uv generate-shell-completion zsh)"' >> ~/.zshrc
+echo 'eval "$(uvx --generate-shell-completion bash)"' >> ~/.bashrc
+```
+
+**Ubuntu:**
+```sh
+echo 'eval "$(uv generate-shell-completion bash)"' >> ~/.bashrc
+echo 'eval "$(uvx --generate-shell-completion bash)"' >> ~/.bashrc
+```
+
 ## NVM (Node Version Manager)
 https://github.com/nvm-sh/nvm
 
