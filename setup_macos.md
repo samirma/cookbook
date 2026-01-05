@@ -4,7 +4,7 @@
 https://brew.sh/
 
 ```sh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 ### Oh My Zsh
@@ -12,14 +12,16 @@ https://github.com/ohmyzsh/ohmyzsh
 
 ```sh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-```
 echo 'ZSH_THEME="risto"' >>  ~/.zshrc
+```
+
 
 ### Itsycal (Mowglii)
 https://mowglii.com/itsycal/
 
 ```sh
 brew install --cask itsycal
+itsycal
 ```
 
 ### KeepingYouAwake
