@@ -23,6 +23,10 @@ print_message "Installing all required packages..."
 apt-get install vim wget git openssh iproute2 python python-pip cmake ccache libzmq rsync root-repo file \
 clinfo ocl-icd opencl-headers fastfetch vulkan-headers vulkan-loader shaderc -y
 
+print_message "Install ubuntu"
+pkg install proot-distro -y
+proot-distro install ubuntu
+
 print_message "Installing Python dependencies..."
 pip install zeroconf
 
