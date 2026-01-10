@@ -17,9 +17,19 @@ def get_ip_address():
         s.close()
     return IP
 
+class MasterRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/ip':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(self.client_address[0].encode('utf-8'))
+        else:
+            super().do_GET()
+
 def start_http_server(public_key):
     PORT = 8000
-    Handler = http.server.SimpleHTTPRequestHandler
+    Handler = MasterRequestHandler
     with socketserver.TCPServer(("", PORT), Handler) as httpd:
         print("serving at port", PORT)
         # Create a temporary file to serve
