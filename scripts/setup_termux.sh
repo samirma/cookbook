@@ -32,6 +32,8 @@ sshd
 
 # --- Master Discovery and Connection ---
 
+print_message "IMPORTANT: Please ensure master.py is running on another PC on the same network."
+
 print_message "Discovering master server..."
 wget -O ~/discover_master.py https://raw.githubusercontent.com/samirma/cookbook/main/scripts/discover_master.py
 chmod +x ~/discover_master.py
@@ -41,6 +43,18 @@ MASTER_URL=$(python ~/discover_master.py)
 if [ -n "$MASTER_URL" ]; then
   echo "Fetching public key from master..."
   MASTER_KEY=$(wget -qO- "$MASTER_URL")
+
+  # Extract base URL to request IP from master
+  # MASTER_URL is like http://ip:port/path
+  MASTER_BASE_URL=$(echo "$MASTER_URL" | sed -E 's|(http://[^/]+).*|\1|')
+  if [ -n "$MASTER_BASE_URL" ]; then
+      print_message "Requesting public IP from master..."
+      IP_FROM_MASTER=$(wget -qO- "${MASTER_BASE_URL}/ip")
+      if [ -n "$IP_FROM_MASTER" ]; then
+          IP_ADDRESS="$IP_FROM_MASTER"
+          echo "Master reported our IP as: $IP_ADDRESS"
+      fi
+  fi
 
   if [ -n "$MASTER_KEY" ]; then
     print_message "Adding master's public key to authorized_keys..."
@@ -72,8 +86,10 @@ fi
 
 # --- Final Instructions ---
 
-# Get device IP address
-IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+# Get device IP address if not already set by master
+if [ -z "$IP_ADDRESS" ]; then
+    IP_ADDRESS=$(ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+fi
 USER_NAME=$(whoami)
 PORT=8022 # Default Termux SSH port
 
