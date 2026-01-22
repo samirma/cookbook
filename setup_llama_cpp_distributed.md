@@ -41,13 +41,17 @@ CUDA_VISIBLE_DEVICES=0 ./rpc-server -p 50052 -H 0.0.0.0
 
 ./build/bin/llama-server -hf unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF:Q2_K --host 0.0.0.0 --port 8080  --no-prefill-assistant  --ctx-size 32768 --jinja   -sm row --temp 0.6 --top-k 20 --top-p 0.95 --min-p 0  -fit on  --rpc  192.168.0.44:50052
 
-./build/bin/llama-server \
-  -hf unsloth/GLM-4.7-Flash-GGUF:Q5_K_XL \
-  --host 0.0.0.0 --port 8080 --jinja --threads -1 \
-  --ctx-size 32768 --temp 0.2 --top-k 50 --top-p 0.95 \
-  --min-p 0.01 \
-  --dry-multiplier 1.5 \
-  --fit on
+./build/bin/llama-server -hf unsloth/GLM-4.7-Flash-GGUF:Q5_K_XL \
+    --alias "unsloth/GLM-4.7-Flash" \
+    --threads -1 \
+    --fit on \
+    --seed 3407 \
+    --temp 1.0 \
+    --top-p 0.95 \
+    --min-p 0.01 \
+    --ctx-size 16384 \
+    --host 0.0.0.0 --port 8080 \
+    --jinja
 
 ```
 
