@@ -122,7 +122,7 @@ export NVM_DIR="$HOME/.nvm"
 ### Usage
 Install Node.js version 20:
 ```sh
-nvm install 20
+nvm install 22
 ```
 
 ## Docker
