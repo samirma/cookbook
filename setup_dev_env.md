@@ -120,9 +120,10 @@ export NVM_DIR="$HOME/.nvm"
 ```
 
 ### Usage
-Install Node.js version 20:
+Install Node.js:
 ```sh
-nvm install 22
+nvm install 24
+nvm alias default 24
 ```
 
 ## Docker
