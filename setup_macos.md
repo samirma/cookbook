@@ -16,6 +16,12 @@ echo 'ZSH_THEME="risto"' >>  ~/.zshrc
 ```
 
 
+### Tools
+
+```sh
+brew install wget
+```
+
 ### Itsycal (Mowglii)
 https://mowglii.com/itsycal/
 
