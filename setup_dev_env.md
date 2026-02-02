@@ -126,6 +126,27 @@ nvm install 24
 nvm alias default 24
 ```
 
+## rbenv ruby 3.2.2
+
+### Installation
+```sh
+# Install rbenv via Homebrew
+brew install rbenv
+
+# Initialize rbenv (add to your ~/.zshrc)
+echo 'eval "$(rbenv init -)"' >> ~/.zshrc
+
+# Restart terminal or source your profile
+source ~/.zshrc
+
+# Install a modern Ruby version
+rbenv install 3.2.2
+
+# Set it as global default
+rbenv global 3.2.2
+
+```
+
 ## Docker
 
 **Ubuntu:**
