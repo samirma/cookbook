@@ -22,7 +22,7 @@ These instructions assume you have:
 ## 1. Install All Tools
 
 ```bash
-brew install zoxide starship fzf tmux tmuxinator eza bat fd ripgrep btop direnv
+brew install zoxide starship fzf tmux tmuxinator eza bat fd ripgrep btop
 ```
 
 ---
@@ -63,76 +63,189 @@ EOF
 
 ### 3.2 Oh-My-Zsh Plugins
 
-```bash
-# Remove old plugin config if exists
-sed -i '' '/# BEGIN: omz_plugins/,/# END: omz_plugins/d' ~/.zshrc
+#### 3.2.1 Install Custom Plugins
 
-# Add plugins configuration (add this BEFORE 'source $ZSH/oh-my-zsh.sh')
-cat >> ~/.zshrc << 'EOF'
-# BEGIN: omz_plugins
-plugins=(
-  git
-  zsh-autosuggestions
-  zsh-syntax-highlighting
-  zsh-history-substring-search
-  colored-man-pages
-  command-not-found
-  fzf
-)
-# END: omz_plugins
-EOF
+First, install the custom plugins that need to be cloned:
+
+```bash
+# Install custom plugins
+git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+git clone --depth=1 https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+
+# Install tmux plugin manager
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 ```
 
-**Note:** If you already have a `plugins=(...)` line in your `.zshrc`, remove it first or update it manually.
+**Note:** Most plugins (`git`, `docker`, `kubectl`, `sudo`, etc.) are built into Oh-My-Zsh. If you get "plugin not found" errors, update Oh-My-Zsh:
+```bash
+omz update
+```
+
+#### 3.2.2 Add Plugins to ~/.zshrc
+
+This command adds plugins one by one, avoiding duplicates and preserving existing ones:
+
+```bash
+# Show current plugins
+echo "Current plugins:"
+grep "^plugins=" ~/.zshrc
+
+# Add recommended plugins individually (safe, won't duplicate)
+for p in zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search colored-man-pages command-not-found fzf docker docker-compose kubectl terraform node npm gradle mvn flutter sudo copypath copyfile dirhistory jsontools encode64 timer extract; do
+  if ! grep -q "plugins=.*\b$p\b" ~/.zshrc 2>/dev/null; then
+    sed -i '' "s/plugins=(/plugins=($p /" ~/.zshrc
+    echo "Added: $p"
+  else
+    echo "Already has: $p"
+  fi
+done
+
+# Show result
+echo ""
+echo "Updated plugins:"
+grep "^plugins=" ~/.zshrc
+```
+
+**Note:** Review the list above and remove any plugins you don't need. Some plugins like `docker`, `kubectl`, `terraform`, `flutter` are specific to backend/mobile development.
+
+---
+
+### 3.2.3 Plugin Reference Guide
+
+#### Core Productivity
+| Plugin | Description |
+|--------|-------------|
+| `git` | Git aliases (`g`, `ga`, `gc`, `gp`, `gst`) and completions |
+| `zsh-autosuggestions` | Suggests commands from history as you type |
+| `zsh-syntax-highlighting` | Syntax highlighting for commands (valid=green, invalid=red) |
+| `zsh-history-substring-search` | Type part of a command, press ↑/↓ to search history |
+| `colored-man-pages` | Adds colors to man pages |
+| `command-not-found` | Suggests packages when a command is not found |
+| `fzf` | Fuzzy finder integration (Ctrl+T for files, Ctrl+R for history) |
+
+#### Backend Development
+| Plugin | Description |
+|--------|-------------|
+| `docker` | Docker completions + aliases (`dps`, `dstop`, `drm`, `dco`) |
+| `docker-compose` | Compose completions + aliases (`dcup`, `dcdown`, `dcr`) |
+| `kubectl` | Kubernetes completions + aliases (`k`, `kgp`, `kgsvc`, `kdf`) |
+| `terraform` | Terraform completions + aliases (`tf`, `tfp`, `tfa`, `tfd`) |
+| `node` | Node.js helpers and completion |
+| `npm` | NPM completions + aliases (`npmg`, `npmS`, `npmD`) |
+| `gradle` | Gradle completions (essential for Java/Android backend) |
+| `mvn` | Maven completions + aliases (`mci`, `mcist`, `mvnd`) |
+| `redis-cli` | Redis completions |
+| `postgres` | PostgreSQL completions |
+
+#### Mobile Development
+| Plugin | Description |
+|--------|-------------|
+| `flutter` | Flutter aliases (`fl`, `flb`, `flr`, `fld`, `fle`) |
+| `bundler` | Bundler completions + aliases (`be`, `bi`, `bu`) |
+| `fastlane` | Fastlane completions |
+
+#### General Utilities
+| Plugin | Description |
+|--------|-------------|
+| `sudo` | Press `ESC` twice → adds `sudo` to current line |
+| `copypath` | `copypath` → copies current directory path to clipboard |
+| `copyfile` | `copyfile <file>` → copies file contents to clipboard |
+| `copybuffer` | `Ctrl+O` → copies terminal buffer to clipboard |
+| `dirhistory` | `Alt+Left/Right` → navigate directory history |
+| `jsontools` | JSON tools: `pp_json`, `is_json`, `urlencode_json` |
+| `encode64` | `encode64` / `decode64` for Base64 encoding |
+| `timer` | Shows command execution time (for commands > 2s) |
+| `extract` | Universal archive extractor: `extract <file>` |
+| `aliases` | List all aliases with `als` or search with `alsc` |
+| `web-search` | Search from terminal: `google <query>`, `github <query>` |
+| `safe-paste` | Prevents accidental execution of pasted multi-line code |
+
+---
+
+### 3.2.4 Quick Plugin Commands
+
+```bash
+# List all active plugins
+omz plugin list
+
+# Enable a plugin temporarily
+omz plugin enable <plugin-name>
+
+# Disable a plugin temporarily
+omz plugin disable <plugin-name>
+
+# Reload after changes
+omz reload
+```
 
 ---
 
 ### 3.3 History Configuration
 
-```bash
-# Remove old history config if exists
-sed -i '' '/# BEGIN: history_config/,/# END: history_config/d' ~/.zshrc
+This script safely adds history settings, only adding what's missing and preserving your existing configuration:
 
-# Add history configuration
-cat >> ~/.zshrc << 'EOF'
-# BEGIN: history_config
-# History configuration
-setopt SHARE_HISTORY
-setopt INC_APPEND_HISTORY
-setopt HIST_EXPIRE_DUPS_FIRST
-setopt HIST_IGNORE_DUPS
-export HISTSIZE=100000
-export SAVEHIST=100000
-export HISTFILE=~/.zsh_history
-# END: history_config
-EOF
+```bash
+#!/bin/bash
+
+ZSHRC="$HOME/.zshrc"
+
+# Function to add setting if not present
+add_if_missing() {
+    local pattern="$1"
+    local line="$2"
+    if ! grep -qE "^${pattern}$" "$ZSHRC" 2>/dev/null; then
+        echo "$line" >> "$ZSHRC"
+        echo "Added: $line"
+    else
+        echo "Already exists: $pattern"
+    fi
+}
+
+# Backup
+cp "$ZSHRC" "${ZSHRC}.backup.$(date +%Y%m%d)"
+
+echo "Configuring history settings..."
+
+# Add each option individually (only if missing)
+add_if_missing "setopt SHARE_HISTORY" "setopt SHARE_HISTORY"
+add_if_missing "setopt INC_APPEND_HISTORY" "setopt INC_APPEND_HISTORY"
+add_if_missing "setopt HIST_EXPIRE_DUPS_FIRST" "setopt HIST_EXPIRE_DUPS_FIRST"
+add_if_missing "setopt HIST_IGNORE_DUPS" "setopt HIST_IGNORE_DUPS"
+add_if_missing "export HISTSIZE=.*" "export HISTSIZE=100000"
+add_if_missing "export SAVEHIST=.*" "export SAVEHIST=100000"
+
+echo ""
+echo "Current history settings in $ZSHRC:"
+grep -E "^(setopt.*HIST|export HIST)" "$ZSHRC"
 ```
+
+**What this does:**
+1. Creates a backup of your `~/.zshrc`
+2. Checks each setting individually
+3. Only adds settings that don't already exist
+4. Shows you exactly what was added vs. what already existed
+5. Displays the final history configuration
+
+**Settings explained:**
+| Setting | Purpose |
+|---------|---------|
+| `SHARE_HISTORY` | Share history between all open terminal sessions |
+| `INC_APPEND_HISTORY` | Save commands to history immediately (not on exit) |
+| `HIST_EXPIRE_DUPS_FIRST` | When history is full, delete duplicates before old entries |
+| `HIST_IGNORE_DUPS` | Don't save a command if it's identical to the previous one |
+| `HISTSIZE=100000` | Keep 100,000 commands in memory |
+| `SAVEHIST=100000` | Save 100,000 commands to disk |
 
 ---
 
-### 3.4 Zoxide (Smart cd)
-
-**Project:** [ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide)
-
-```bash
-# Remove old zoxide config if exists
-sed -i '' '/# BEGIN: zoxide/,/# END: zoxide/d' ~/.zshrc
-
-# Add zoxide configuration
-cat >> ~/.zshrc << 'EOF'
-# BEGIN: zoxide
-# Zoxide - Smart directory jumper
-eval "$(zoxide init zsh)"
-alias cd="z"
-# END: zoxide
-EOF
-```
-
----
-
-### 3.5 Starship Prompt
+### 3.4 Starship Prompt
 
 **Project:** [starship/starship](https://github.com/starship/starship)
+
+Starship is a minimal, fast, and customizable shell prompt that shows git status, programming language versions, command duration, and more.
+
+#### 3.4.1 Enable Starship in Zsh
 
 ```bash
 # Remove old starship config if exists
@@ -147,177 +260,7 @@ eval "$(starship init zsh)"
 EOF
 ```
 
----
-
-### 3.6 fzf (Fuzzy Finder)
-
-**Project:** [junegunn/fzf](https://github.com/junegunn/fzf)
-
-```bash
-# Remove old fzf config if exists
-sed -i '' '/# BEGIN: fzf/,/# END: fzf/d' ~/.zshrc
-
-# Add fzf configuration
-cat >> ~/.zshrc << 'EOF'
-# BEGIN: fzf
-# fzf - Fuzzy finder
-source <(fzf --zsh)
-
-# fzf customization
-export FZF_DEFAULT_OPTS="
-  --height 40%
-  --layout=reverse
-  --border
-  --preview 'bat --color=always --style=numbers --line-range=:500 {}' 
-  --preview-window hidden:right:50%
-  --bind 'ctrl-/:toggle-preview'
-"
-export FZF_DEFAULT_COMMAND="fd --type f --hidden --strip-cwd-prefix --exclude .git"
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND="fd --type d --hidden --strip-cwd-prefix --exclude .git"
-# END: fzf
-EOF
-```
-
----
-
-### 3.7 Direnv (Per-Directory Environment)
-
-**Project:** [direnv/direnv](https://github.com/direnv/direnv)
-
-```bash
-# Remove old direnv config if exists
-sed -i '' '/# BEGIN: direnv/,/# END: direnv/d' ~/.zshrc
-
-# Add direnv configuration
-cat >> ~/.zshrc << 'EOF'
-# BEGIN: direnv
-# Direnv - Auto-load environment per directory
-eval "$(direnv hook zsh)"
-# END: direnv
-EOF
-```
-
----
-
-### 3.8 Modern CLI Aliases
-
-```bash
-# Remove old aliases if exists
-sed -i '' '/# BEGIN: modern_aliases/,/# END: modern_aliases/d' ~/.zshrc
-
-# Add aliases
-cat >> ~/.zshrc << 'EOF'
-# BEGIN: modern_aliases
-# Modern CLI aliases
-if command -v eza &> /dev/null; then
-  alias ls="eza --group-directories-first"
-  alias ll="eza -l --git"
-  alias la="eza -la --git"
-  alias lt="eza --tree --level=2"
-  alias l="eza -lah"
-fi
-
-if command -v bat &> /dev/null; then
-  alias cat="bat --paging=never"
-  alias catp="bat --plain"
-fi
-
-if command -v btop &> /dev/null; then
-  alias top="btop"
-fi
-
-alias grep="rg"
-alias find="fd"
-alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-# END: modern_aliases
-EOF
-```
-
----
-
-### 3.9 Utility Functions
-
-```bash
-# Remove old functions if exists
-sed -i '' '/# BEGIN: utility_functions/,/# END: utility_functions/d' ~/.zshrc
-
-# Add utility functions
-cat >> ~/.zshrc << 'EOF'
-# BEGIN: utility_functions
-# Utility functions
-
-# Create directory and cd into it
-mkcd() { mkdir -p "$1" && cd "$1"; }
-
-# Universal archive extractor
-extract() {
-  if [ -f "$1" ]; then
-    case "$1" in
-      *.tar.bz2)   tar xjf "$1" ;;
-      *.tar.gz)    tar xzf "$1" ;;
-      *.tar.xz)    tar xJf "$1" ;;
-      *.bz2)       bunzip2 "$1" ;;
-      *.rar)       unrar x "$1" ;;
-      *.gz)        gunzip "$1" ;;
-      *.tar)       tar xf "$1" ;;
-      *.tbz2)      tar xjf "$1" ;;
-      *.tgz)       tar xzf "$1" ;;
-      *.zip)       unzip "$1" ;;
-      *.Z)         uncompress "$1" ;;
-      *.7z)        7z x "$1" ;;
-      *)           echo "Cannot extract '$1'" ;;
-    esac
-  fi
-}
-
-# Git clone and cd
-gclone() { git clone "$1" && cd "$(basename "$1" .git)"; }
-
-# Interactive process killer
-killp() {
-  ps aux | grep -i "$1" | grep -v grep
-  read -q "REPLY?Kill these? (y/n) "
-  [[ "$REPLY" =~ ^[Yy]$ ]] && ps aux | grep -i "$1" | grep -v grep | awk '{print $2}' | xargs kill -9
-}
-
-# Bookmark current location
-bookmark() {
-  local name="$1"
-  if [[ -z "$name" ]]; then
-    echo "Usage: bookmark <name>"
-    return 1
-  fi
-  mkdir -p ~/.bookmarks
-  echo "$(pwd)" > ~/.bookmarks/$name
-  echo "Bookmark saved: $name -> $(pwd)"
-}
-
-# Jump to bookmarked location
-jump() {
-  local name="$1"
-  if [[ -z "$name" ]]; then
-    echo "Usage: jump <name>"
-    return 1
-  fi
-  if [[ -f ~/.bookmarks/$name ]]; then
-    cd "$(cat ~/.bookmarks/$name)"
-  else
-    echo "Bookmark not found: $name"
-    return 1
-  fi
-}
-# END: utility_functions
-EOF
-```
-
----
-
-## 4. Configure Starship (~/.config/starship.toml)
-
-**Apply this configuration:**
+#### 3.4.2 Configure Starship (~/.config/starship.toml)
 
 ```bash
 # Create config directory if not exists
@@ -356,7 +299,7 @@ format = "([$all_status$ahead_behind]($style))"
 style = "yellow bold"
 ahead = "+"
 behind = "-"
-diverged = "+-"
+diverged = "+_"
 up_to_date = ""
 untracked = "?"
 modified = "*"
@@ -403,7 +346,84 @@ EOF
 
 ---
 
-## 5. Configure Tmux (~/.tmux.conf)
+### 3.5 fzf (Fuzzy Finder)
+
+**Project:** [junegunn/fzf](https://github.com/junegunn/fzf)
+
+fzf is a command-line fuzzy finder that helps you quickly find files, commands, or any text using fuzzy matching. It provides interactive filtering with real-time results as you type.
+
+**Key bindings:**
+- `Ctrl+T` - Fuzzy find files in current directory
+- `Alt+C` - Fuzzy find directories and `cd` into selected one  
+- `Ctrl+R` - Fuzzy search through command history
+
+```bash
+# Remove old fzf config if exists
+sed -i '' '/# BEGIN: fzf/,/# END: fzf/d' ~/.zshrc
+
+# Add fzf configuration
+cat >> ~/.zshrc << 'EOF'
+# BEGIN: fzf
+# fzf - Fuzzy finder
+source <(fzf --zsh)
+
+# fzf customization
+export FZF_DEFAULT_OPTS="
+  --height 40%
+  --layout=reverse
+  --border
+  --preview 'bat --color=always --style=numbers --line-range=:500 {}' 
+  --preview-window hidden:right:50%
+  --bind 'ctrl-/:toggle-preview'
+"
+export FZF_DEFAULT_COMMAND="fd --type f --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="fd --type d --hidden --strip-cwd-prefix --exclude .git"
+# END: fzf
+EOF
+```
+
+---
+
+### 3.6 Modern CLI Aliases
+
+```bash
+# Remove old aliases if exists
+sed -i '' '/# BEGIN: modern_aliases/,/# END: modern_aliases/d' ~/.zshrc
+
+# Add aliases
+cat >> ~/.zshrc << 'EOF'
+# BEGIN: modern_aliases
+# Modern CLI aliases
+if command -v eza &> /dev/null; then
+  alias ls="eza --group-directories-first"
+  alias ll="eza -l --git"
+  alias la="eza -la --git"
+  alias lt="eza --tree --level=2"
+  alias l="eza -lah"
+fi
+
+if command -v bat &> /dev/null; then
+  alias cat="bat --paging=never"
+  alias catp="bat --plain"
+fi
+
+if command -v btop &> /dev/null; then
+  alias top="btop"
+fi
+
+alias grep="rg"
+alias find="fd"
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+# END: modern_aliases
+EOF
+```
+
+---
+
+## 4. Configure Tmux (~/.tmux.conf)
 
 ```bash
 cat > ~/.tmux.conf << 'EOF'
@@ -457,36 +477,7 @@ EOF
 
 ---
 
-## 6. Direnv Helper Functions (~/.config/direnv/direnvrc)
-
-```bash
-mkdir -p ~/.config/direnv
-
-cat > ~/.config/direnv/direnvrc << 'EOF'
-# Direnv configuration
-
-# Python virtualenv layout
-layout_python() {
-  local venv_path="${PWD}/.venv"
-  if [[ ! -d "$venv_path" ]]; then
-    log_status "Creating virtualenv in $venv_path"
-    python3 -m venv "$venv_path"
-  fi
-  export VIRTUAL_ENV="$venv_path"
-  export PATH="$VIRTUAL_ENV/bin:$PATH"
-}
-
-# Node.js layout
-layout_node() {
-  export NODE_ENV="${NODE_ENV:-development}"
-  export PATH="$PWD/node_modules/.bin:$PATH"
-}
-EOF
-```
-
----
-
-## 7. Reload Everything
+## 5. Reload Everything
 
 ```bash
 # Reload zsh configuration
@@ -557,4 +548,3 @@ sed -i '' '/# BEGIN: /,/# END: /d' ~/.zshrc
 - `~/.zshrc` - Main shell configuration
 - `~/.config/starship.toml` - Prompt configuration
 - `~/.tmux.conf` - Tmux configuration
-- `~/.config/direnv/direnvrc` - Direnv helpers
