@@ -92,7 +92,7 @@ echo "Current plugins:"
 grep "^plugins=" ~/.zshrc
 
 # Add recommended plugins individually (safe, won't duplicate)
-for p in zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search colored-man-pages command-not-found fzf docker docker-compose kubectl terraform node npm gradle mvn flutter sudo copypath copyfile dirhistory jsontools encode64 timer extract; do
+for p in zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search colored-man-pages command-not-found fzf docker docker-compose kubectl terraform node npm gradle mvn flutter sudo dirhistory jsontools encode64 timer extract; do
   if ! grep -q "plugins=.*\b$p\b" ~/.zshrc 2>/dev/null; then
     sed -i '' "s/plugins=(/plugins=($p /" ~/.zshrc
     echo "Added: $p"
@@ -149,9 +149,6 @@ grep "^plugins=" ~/.zshrc
 | Plugin | Description |
 |--------|-------------|
 | `sudo` | Press `ESC` twice → adds `sudo` to current line |
-| `copypath` | `copypath` → copies current directory path to clipboard |
-| `copyfile` | `copyfile <file>` → copies file contents to clipboard |
-| `copybuffer` | `Ctrl+O` → copies terminal buffer to clipboard |
 | `dirhistory` | `Alt+Left/Right` → navigate directory history |
 | `jsontools` | JSON tools: `pp_json`, `is_json`, `urlencode_json` |
 | `encode64` | `encode64` / `decode64` for Base64 encoding |
