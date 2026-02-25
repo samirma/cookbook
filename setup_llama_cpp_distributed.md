@@ -19,6 +19,7 @@ Termux
 cmake -B build -DGGML_VULKAN=1 -DGGML_RPC=ON  -DBUILD_SHARED_LIBS=OFF   -DGGML_ACCELERATE=ON
 ```
 
+Build
 ```sh
 cmake --build build --config Release -j $(nproc)
 ```
@@ -38,26 +39,21 @@ CUDA_VISIBLE_DEVICES=0 ./rpc-server -p 50052 -H 0.0.0.0
 ### LLM Server
 ```sh
 
-
-./build/bin/llama-server -hf unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF:Q2_K --host 0.0.0.0 --port 8080  --no-prefill-assistant  --ctx-size 32768 --jinja   -sm row --temp 0.6 --top-k 20 --top-p 0.95 --min-p 0  -fit on  --rpc  192.168.0.44:50052
-
-./build/bin/llama-server -hf unsloth/GLM-4.7-Flash-GGUF:Q5_K_XL \
-    --alias "unsloth/GLM-4.7-Flash" \
-    --threads -1 \
-    --fit on \
-    --seed 3407 \
-    --temp 1.0 \
+./build/bin/llama-server \
+    -hf unsloth/Qwen3.5-27B-GGUF:UD-Q4_K_XL \
+    --alias "unsloth/Qwen3.5-27B" \
+    --temp 0.6 \
     --top-p 0.95 \
-    --min-p 0.01 \
     --ctx-size 16384 \
-    --host 0.0.0.0 --port 8080 \
-    --jinja
+    --top-k 20 \
+    --min-p 0.00 \
+    --port 8001
 
 ```
 
 ### Curl Test
 ```sh
-curl -X POST http://localhost:8080/v1/chat/completions     -H "Content-Type: application/json"     -d '{
+curl -X POST http://localhost:8001/v1/chat/completions     -H "Content-Type: application/json"     -d '{
         "messages": [
             {"role": "user", "content": "Hello! How are you today?"}
         ],
