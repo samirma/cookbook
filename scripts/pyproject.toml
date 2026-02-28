@@ -1,0 +1,11 @@
+[project]
+name = "cookbook-master"
+version = "0.1.0"
+description = "Master server for distributed llama.cpp setup with Zeroconf discovery"
+requires-python = ">=3.10"
+dependencies = [
+    "zeroconf",
+]
+
+[project.scripts]
+master = "master:main"
