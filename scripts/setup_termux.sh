@@ -23,10 +23,6 @@ print_message "Installing all required packages..."
 apt-get install vim wget git openssh iproute2 python python-pip cmake ccache libzmq rsync root-repo file \
 clinfo ocl-icd opencl-headers fastfetch vulkan-headers vulkan-loader shaderc -y
 
-print_message "Install ubuntu"
-pkg install proot-distro -y
-proot-distro install ubuntu
-
 print_message "Installing Python dependencies..."
 pip install zeroconf
 
@@ -113,5 +109,25 @@ wget https://raw.githubusercontent.com/samirma/cookbook/main/scripts/run_termux.
 
 echo "sh run_termux.sh" > ~/.bashrc
 
-sh ~/.bashrc
+print_message "Setup complete! Starting run_termux.sh..."
+sh run_termux.sh
+
+# --- Proot-Distro Setup (Ubuntu) ---
+# This section is at the end and is allowed to fail without breaking the script
+
+print_message "Installing proot-distro (optional)..."
+if pkg install proot-distro -y; then
+    print_message "Installing Ubuntu via proot-distro (optional)..."
+    if proot-distro install ubuntu; then
+        print_message "Ubuntu installed successfully via proot-distro."
+        echo "To login to Ubuntu, run: proot-distro login ubuntu"
+    else
+        print_message "Note: proot-distro install ubuntu failed or Ubuntu is already installed."
+        echo "This is optional and does not affect the main setup."
+        echo "To manually install later, run: proot-distro install ubuntu"
+    fi
+else
+    print_message "Note: proot-distro installation failed."
+    echo "This is optional and does not affect the main setup."
+fi
 
