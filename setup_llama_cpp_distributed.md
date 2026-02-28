@@ -1,4 +1,42 @@
-### llama cpp build
+## Master Server
+
+The master server distributes SSH public keys to workers via HTTP and Zeroconf discovery. It allows workers to discover the master and fetch the public key for SSH access.
+
+### Prerequisites
+
+- [uv](https://docs.astral.sh/uv/) - Modern Python package manager
+
+Install uv if not already installed:
+```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Running the Master
+
+The easiest way to run the master server:
+
+```sh
+cd scripts
+./run_master.sh
+```
+
+Or manually with uv:
+```sh
+cd scripts
+uv run master.py
+```
+
+The master will:
+1. Generate an SSH key pair at `~/.ssh/id_rsa` if it doesn't exist
+2. Start an HTTP server on port 8000 serving the public key
+3. Register the service via Zeroconf for worker discovery
+4. Keep running until interrupted (Ctrl+C)
+
+**Note:** Workers can discover the master using `discover_master.py` which outputs the URL to fetch the public key.
+
+---
+
+## llama cpp build
 
 ```sh
 git clone https://github.com/ggml-org/llama.cpp
