@@ -85,7 +85,7 @@ CUDA_VISIBLE_DEVICES=0 ./rpc-server -p 50052 -H 0.0.0.0
     --ctx-size 16384 \
     --top-k 20 \
     --min-p 0.00 \
-    --port 8001
+     --port 8001 --no-prefill-assistant
 
 ```
 
