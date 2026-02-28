@@ -111,23 +111,3 @@ echo "sh run_termux.sh" > ~/.bashrc
 
 print_message "Setup complete! Starting run_termux.sh..."
 sh run_termux.sh
-
-# --- Proot-Distro Setup (Ubuntu) ---
-# This section is at the end and is allowed to fail without breaking the script
-
-print_message "Installing proot-distro (optional)..."
-if pkg install proot-distro -y; then
-    print_message "Installing Ubuntu via proot-distro (optional)..."
-    if proot-distro install ubuntu; then
-        print_message "Ubuntu installed successfully via proot-distro."
-        echo "To login to Ubuntu, run: proot-distro login ubuntu"
-    else
-        print_message "Note: proot-distro install ubuntu failed or Ubuntu is already installed."
-        echo "This is optional and does not affect the main setup."
-        echo "To manually install later, run: proot-distro install ubuntu"
-    fi
-else
-    print_message "Note: proot-distro installation failed."
-    echo "This is optional and does not affect the main setup."
-fi
-
