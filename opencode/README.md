@@ -41,7 +41,8 @@ Visit [https://opencode.ai](https://opencode.ai) for latest release
 Run the installation script from this directory:
 
 ```bash
-cd /Users/U124317/cookbook/opencode
+git clone git@github.com:samirma/cookbook.git 
+cd cookbook/opencode
 chmod +x install-agents.sh
 ./install-agents.sh
 ```
