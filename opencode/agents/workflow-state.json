@@ -1,0 +1,105 @@
+{
+  "$schema": "https://opencode.ai/workflow-state.json",
+  "description": "Workflow state tracking configuration for multi-agent development team",
+  "version": "2.0.0",
+  "states": {
+    "PLANNING": {
+      "description": "Requirements analysis and implementation planning",
+      "allowedTransitions": ["CODING"],
+      "requiredAgents": ["PLANNER"],
+      "timeout": 300,
+      "maxIterations": 1
+    },
+    "CODING": {
+      "description": "Implementation and code writing",
+      "allowedTransitions": ["REVIEWING", "CHECKPOINT"],
+      "requiredAgents": ["CODER"],
+      "timeout": 1800,
+      "maxIterations": 1
+    },
+    "REVIEWING": {
+      "description": "Parallel code review and testing",
+      "allowedTransitions": ["CODING", "CHECKPOINT", "DOCUMENTING", "COMPLETE"],
+      "requiredAgents": ["REVIEWER", "TESTER"],
+      "timeout": 600,
+      "maxIterations": 3,
+      "parallel": true
+    },
+    "CHECKPOINT": {
+      "description": "Human-in-the-loop review",
+      "allowedTransitions": ["CODING", "DOCUMENTING", "COMPLETE", "ABORTED"],
+      "requiredAgents": ["CHECKPOINT"],
+      "timeout": 0,
+      "maxIterations": 1,
+      "requiresHuman": true
+    },
+    "DOCUMENTING": {
+      "description": "Documentation review and updates",
+      "allowedTransitions": ["COMPLETE", "CODING"],
+      "requiredAgents": ["DOCUMENTATION"],
+      "timeout": 300,
+      "maxIterations": 2,
+      "optional": true
+    },
+    "COMPLETE": {
+      "description": "Task completed successfully",
+      "allowedTransitions": [],
+      "requiredAgents": [],
+      "terminal": true
+    },
+    "ABORTED": {
+      "description": "Task aborted by human decision",
+      "allowedTransitions": [],
+      "requiredAgents": [],
+      "terminal": true
+    }
+  },
+  "confidenceThresholds": {
+    "autoApprove": 90,
+    "checkpointOptional": 70,
+    "checkpointRequired": 0
+  },
+  "riskFactors": {
+    "breakingChanges": {
+      "weight": 15,
+      "description": "API or schema breaking changes"
+    },
+    "securityImplications": {
+      "weight": 25,
+      "description": "Security-related modifications"
+    },
+    "performanceImpact": {
+      "weight": 15,
+      "description": "Performance-critical changes"
+    },
+    "dataIntegrity": {
+      "weight": 20,
+      "description": "Database or data handling changes"
+    },
+    "complianceRequirements": {
+      "weight": 20,
+      "description": "Regulatory or compliance-related"
+    },
+    "productionDeployment": {
+      "weight": 15,
+      "description": "Direct production impact"
+    }
+  },
+  "iterationLimits": {
+    "maxReviewIterations": 3,
+    "maxDocIterations": 2,
+    "maxTotalIterations": 5
+  },
+  "notificationRules": {
+    "onLowConfidence": {
+      "threshold": 70,
+      "action": "triggerCheckpoint"
+    },
+    "onCriticalIssue": {
+      "action": "triggerCheckpoint"
+    },
+    "onMaxIterations": {
+      "action": "triggerCheckpoint"
+    }
+  }
+}
