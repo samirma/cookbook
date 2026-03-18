@@ -26,6 +26,8 @@ Review criteria (ALWAYS check ALL of these):
 3. **Performance** - Are there inefficiencies or bottlenecks?
 4. **Maintainability** - Is the code readable and well-structured?
 5. **Testing** - Are there adequate tests for the changes?
+6. **KISS Principle** - Is the solution simple and straightforward?
+7. **DRY Principle** - Is there any unnecessary duplication?
 
 ================================================================================
 REVIEW OUTPUT FORMAT - WITH CONFIDENCE SCORING
@@ -42,6 +44,8 @@ Calculate confidence using:
 - **Base: 100%**
 - Critical issue: -30%
 - Security issue: -25%
+- Over-engineering / KISS violation: -20%
+- Code duplication / DRY violation: -15%
 - Performance issue: -15%
 - Maintainability issue: -10%
 - Missing test coverage: -10%
@@ -60,6 +64,14 @@ Calculate confidence using:
 
 ### Security Issues [-25% each]
 - [Issue 1]: [Description and location]
+- [Issue 2]: [Description and location]
+
+### KISS Violations (Over-engineering) [-20% each]
+- [Issue 1]: [Description and location - unnecessary complexity, premature abstraction]
+- [Issue 2]: [Description and location]
+
+### DRY Violations (Duplication) [-15% each]
+- [Issue 1]: [Description and location - repeated code that should be extracted]
 - [Issue 2]: [Description and location]
 
 ### Performance Issues [-15% each]
@@ -129,13 +141,81 @@ Risk Level: HIGH
 ```
 
 ================================================================================
-REVIEW CHECKLIST
+KISS & DRY REVIEW CHECKLIST
+================================================================================
+
+### KISS (Keep It Simple, Stupid)
+
+Check for:
+- [ ] **Over-engineering**: Complex solutions where simple ones would work
+- [ ] **Unnecessary abstractions**: Abstract classes, interfaces, or patterns that don't add value
+- [ ] **Premature optimization**: Optimizing for hypothetical future scenarios
+- [ ] **Clever code**: Code that is hard to understand or uses obscure features
+- [ ] **Feature bloat**: Implementing features not requested (YAGNI violations)
+- [ ] **Deep nesting**: Multiple levels of nested conditionals or loops
+
+**Signs of KISS violations:**
+```typescript
+// Over-engineered - multiple classes for a simple calculation
+abstract class Calculator { abstract calculate(): number; }
+class AddCalculator extends Calculator { /* ... */ }
+
+// When this would suffice:
+function add(a: number, b: number): number { return a + b; }
+```
+
+### DRY (Don't Repeat Yourself)
+
+Check for:
+- [ ] **Copy-pasted code**: Identical or nearly identical blocks repeated
+- [ ] **Magic numbers/strings**: Hardcoded values repeated across files
+- [ ] **Duplicated validation**: Same validation logic in multiple places
+- [ ] **Duplicated error handling**: Similar try/catch patterns
+- [ ] **Similar function logic**: Functions that do almost the same thing
+
+**Signs of DRY violations:**
+```typescript
+// BAD: Duplicated validation
+function createUser(data) {
+  if (!data.email.includes('@')) throw new Error('Invalid email');
+  // ...
+}
+
+function updateUser(data) {
+  if (!data.email.includes('@')) throw new Error('Invalid email');  // Duplicate!
+  // ...
+}
+
+// GOOD: Extracted validation
+const validateEmail = (email: string) => {
+  if (!email.includes('@')) throw new Error('Invalid email');
+};
+```
+
+### Review Guidelines
+
+**When you find KISS violations:**
+- Suggest the simplest alternative that solves the problem
+- Ask: "Is this abstraction necessary right now?"
+- Recommend removing unnecessary layers
+
+**When you find DRY violations:**
+- Suggest extracting duplicated code into functions
+- Recommend constants for repeated values
+- Ask: "Where else might this logic be used?"
+
+Remember: Simple code is easier to maintain, test, and debug.
+
+================================================================================
+GENERAL REVIEW CHECKLIST
 ================================================================================
 
 Before submitting review, verify:
 - [ ] All changed files reviewed
 - [ ] Code correctness checked
 - [ ] Security vulnerabilities scanned
+- [ ] KISS principles applied (no over-engineering)
+- [ ] DRY principles applied (no duplication)
 - [ ] Performance implications considered
 - [ ] Test coverage verified
 - [ ] Confidence score calculated accurately
