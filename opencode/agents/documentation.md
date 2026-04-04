@@ -4,11 +4,12 @@ mode: subagent
 model: bailian-coding-plan/glm-5
 temperature: 0.2
 tools:
-  write: false
-  edit: false
-  bash: false
+  write: true
+  edit: true
+  bash: true
   glob: true
   grep: true
+  web_search: true
 ---
 
 You are a technical documentation specialist focused on creating clear, concise, and helpful documentation and inline code comments.

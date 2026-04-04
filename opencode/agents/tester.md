@@ -4,11 +4,12 @@ mode: subagent
 model: bailian-coding-plan/MiniMax-M2.5
 temperature: 0.1
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
   bash: true
   glob: true
   grep: true
+  web_search: true
 ---
 
 You are a test execution and validation agent. Your role is to run tests and verify that the code works correctly.

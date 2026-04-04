@@ -10,9 +10,9 @@ opencode/
 ├── install-agents.sh          # Installation script
 ├── config.json.template       # Configuration template
 └── agents/                    # Agent definitions
-    ├── coder.md              # Primary orchestrator
-    ├── planner.md            # Architecture planning
-    ├── reviewer.md           # Code quality review
+    ├── dev-team.md           # Primary orchestrator (planning, coding, quality)
+    ├── coder.md              # Specialized coding subagent
+    ├── reviewer.md           # Code quality review (MANDATORY step)
     ├── tester.md             # Test execution
     ├── checkpoint.md         # Human review facilitator
     ├── documentation.md      # Documentation review
@@ -76,8 +76,8 @@ Edit `~/.opencode/config.json` and add your API keys:
 ```
 
 **Note**: The agents use models from `bailian-coding-plan` provider:
+- `glm-5` (dev-team - Primary, Checkpoint, Documentation)
 - `kimi-k2.5` (Coder)
-- `glm-5` (Planner, Checkpoint, Documentation)
 - `MiniMax-M2.5` (Reviewer, Tester)
 
 ### 4. Verify Installation
@@ -97,12 +97,12 @@ opencode run --agent coder "Hello world"
 
 | Agent | Purpose | Model | Capabilities |
 |-------|---------|-------|--------------|
-| **coder** | Primary orchestrator | kimi-k2.5 | write, edit, bash, glob, grep, web_search |
-| **planner** | Architecture planning | glm-5 | glob, grep, web_search |
-| **reviewer** | Code quality review | MiniMax-M2.5 | glob, grep |
-| **tester** | Test execution | MiniMax-M2.5 | bash, glob, grep |
-| **checkpoint** | Human review | glm-5 | glob, grep |
-| **documentation** | Docs review | glm-5 | glob, grep |
+| **dev-team** | Primary orchestrator (planning + coding) | glm-5 | write, edit, bash, glob, grep, web_search |
+| **coder** | Specialized coding subagent | kimi-k2.5 | write, edit, bash, glob, grep, web_search |
+| **reviewer** | Code quality review (MANDATORY) | MiniMax-M2.5 | write, edit, bash, glob, grep, web_search |
+| **tester** | Test execution | MiniMax-M2.5 | write, edit, bash, glob, grep, web_search |
+| **checkpoint** | Human review | glm-5 | write, edit, bash, glob, grep, web_search |
+| **documentation** | Docs review | glm-5 | write, edit, bash, glob, grep, web_search |
 
 ## 🔄 Workflow Overview
 
@@ -110,38 +110,44 @@ opencode run --agent coder "Hello world"
 User Request
     ↓
 ┌─────────────────────────────────────────────────────────┐
-│  CODER (Primary) - orchestrates the entire workflow     │
-│  ├── Calls PLANNER → Gets implementation plan           │
+│  DEV-TEAM (Primary) - orchestrates the entire workflow  │
+│  ├── Creates implementation plan                        │
 │  ├── Implements code                                    │
-│  ├── Spawns REVIEWER + TESTER (in parallel)             │
+│  ├── Calls REVIEWER (MANDATORY) → Code quality check    │
+│  ├── Calls TESTER (parallel) → Test execution           │
 │  ├── Calculates confidence score                        │
 │  ├── Calls CHECKPOINT if confidence < 70%               │
 │  └── Calls DOCUMENTATION (optional, after completion)   │
 └─────────────────────────────────────────────────────────┘
 ```
 
+### Key Changes:
+- **dev-team** is now the primary agent (combines planning + coding)
+- **Code Review is MANDATORY** - cannot be skipped
+- All agents have full tool access (write, edit, bash, glob, grep, web_search)
+
 ## 📝 Usage Examples
 
 ### Basic Usage
 ```bash
 # Run with a specific task
-opencode run --agent coder "Implement user authentication with JWT"
+opencode run --agent dev-team "Implement user authentication with JWT"
 
 # Interactive mode
-opencode --agent coder
+opencode --agent dev-team
 
 # Continue last session
-opencode --agent coder --continue
+opencode --agent dev-team --continue
 ```
 
 ### Architecture Planning Only
 ```bash
-opencode run --agent planner "Design microservices architecture"
+opencode run --agent dev-team "Design microservices architecture"
 ```
 
 ### Web Interface
 ```bash
-opencode web --agent coder
+opencode web --agent dev-team
 ```
 
 ## ⚙️ Configuration Details
@@ -150,12 +156,14 @@ opencode web --agent coder
 
 | Agent | write | edit | bash | glob | grep | web_search |
 |-------|:-----:|:----:|:----:|:----:|:----:|:----------:|
+| dev-team | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | coder | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| planner | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| reviewer | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| tester | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ |
-| checkpoint | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| documentation | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| reviewer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| tester | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| checkpoint | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| documentation | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+**All agents now have full tool access for maximum flexibility.**
 
 ### Confidence Thresholds
 
@@ -172,8 +180,8 @@ opencode web --agent coder
 Edit files in `~/.opencode/agents/` after installation:
 
 ```bash
-# Example: Adjust Coder's temperature
-vim ~/.opencode/agents/coder.md
+# Example: Adjust dev-team's temperature
+vim ~/.opencode/agents/dev-team.md
 ```
 
 ### Adding Custom Agents
