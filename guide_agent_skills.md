@@ -35,13 +35,7 @@ Automates interactions for Apple-platform apps (iOS, tvOS, macOS) and Android de
 Install from https://agent-device.dev/:
 
 ```bash
-npx skills add callstackincubator/agent-device
-```
-
-To also install the exploratory QA skill (dogfood):
-
-```bash
-npx skills add callstackincubator/agent-device --skill dogfood
+npx -g skills add callstackincubator/agent-device --skill dogfood
 ```
 
 ## Verification
