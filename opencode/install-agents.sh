@@ -88,7 +88,7 @@ echo -e "${GREEN}  Installation Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo -e "${BLUE}Installed agents:${NC}"
-ls -1 "$AGENTS_DIR"/*.md 2>/dev/null | xargs -n1 basename | sed 's/^/  - /'
+ls -1 "$AGENTS_DIR"/*.md 2>/dev/null | grep -v workflow-state | xargs -n1 basename | sed 's/^/  - /'
 echo ""
 echo -e "${BLUE}Configuration files:${NC}"
 ls -1 "$AGENTS_DIR"/*.json 2>/dev/null | xargs -n1 basename | sed 's/^/  - /'
@@ -96,5 +96,5 @@ echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo "  1. Edit $CONFIG_FILE to add your API key"
 echo "  2. Run 'opencode --version' to verify installation"
-echo "  3. Run 'opencode run --agent coder \"Your task\"' to start"
+echo "  3. Run 'opencode run --agent dev-team \"Your task\"' to start"
 echo ""
