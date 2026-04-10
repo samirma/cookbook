@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">%h SSH</name>
+  <service>
+    <type>_ssh._tcp</type>
+    <port>22</port>
+    <txt-record>description=Raspberry Homelab Server</txt-record>
+    <txt-record>type=homelab</txt-record>
+    <txt-record>hardware=raspberry</txt-record>
+    <txt-record>os=linux</txt-record>
+  </service>
+</service-group>

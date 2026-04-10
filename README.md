@@ -14,3 +14,4 @@ A collection of guides and scripts for setting up development environments and o
 
 - **[guide_ssh_key_restore.md](guide_ssh_key_restore.md)**: Guide for restoring SSH keys from backup.
 - **[guide_outlook_rules.md](guide_outlook_rules.md)**: Instructions for filtering Outlook meeting invites.
+- **[guide_avahi_services.md](guide_avahi_services.md)**: Configuring Avahi mDNS service discovery for homelab services (SSH, SearXNG).

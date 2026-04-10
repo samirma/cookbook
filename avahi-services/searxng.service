@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">%h SearXNG</name>
+  <service>
+    <type>_http._tcp</type>
+    <port>8080</port>
+    <txt-record>path=/</txt-record>
+    <txt-record>description=SearXNG Privacy Search Engine</txt-record>
+    <txt-record>service=searxng</txt-record>
+    <txt-record>type=search-engine</txt-record>
+  </service>
+</service-group>
