@@ -9,7 +9,7 @@ This guide covers the setup of development tools for both Ubuntu and macOS.
 **Ubuntu:**
 ```sh
 sudo apt update
-sudo apt install git
+sudo apt install git build-essential cmake
 ```
 
 **macOS:**
