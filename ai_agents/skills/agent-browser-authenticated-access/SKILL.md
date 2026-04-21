@@ -20,9 +20,9 @@ Use this skill when you need to retrieve content from URLs requiring authenticat
 ## Workflow
 
 ### 1. Start browser session
-Ensure that the target page really requires an authenticated session. 
+Ensure that the target page really requires an authenticated session.
 
-Determine which browser to use
+**Determine which browser to use:**
 - **First**, check the persisted preference file: `~/.agents/skills/agent-browser-authenticated-access/.browser-config.json`.
   - If it exists and contains a `"browser"` value, use that browser.
   - If it does **not** exist, **ask the user** which browser they want to use or already have the target page logged in (e.g., Google Chrome, Microsoft Edge, Safari, Firefox).
@@ -33,8 +33,17 @@ Determine which browser to use
     }
     ```
 
-Them read the browser configuration, find its executable path, and start the browser with remote debugging enabled on port 9222 using Chrome DevTools Protocol to load the same profile used by the user to laverage its session to be read to be connected as per the https://agent-browser.dev/cdp-model documentation.
+**Start the browser with CDP:**
+- Consult the agent-browser documentation at https://agent-browser.dev/cdp-model for the correct procedure to start the chosen browser with Chrome DevTools Protocol (CDP) enabled on port 9222, using the user's existing browser profile to leverage their authenticated sessions.
 
+**Verify CDP is active:**
+```bash
+curl -s http://localhost:9222/json/version
+```
+If this does not return valid JSON with a `"Browser"` field:
+1. Check if the browser is already running without CDP enabled
+2. If so, ask the user to close all browser windows, then retry starting with CDP
+3. Wait a few seconds after launch and retry the verification
 
 ### 2. Open and read the target page
 ```bash
@@ -62,6 +71,8 @@ agent-browser close --all
 | Issue | Solution |
 |-------|----------|
 | Browser fails to start | Check Chrome or Edge is installed; verify no conflicting instances |
+| CDP not responding | Browser may be running without CDP. Ask user to close all browser windows and retry |
 | CDP connection refused | Wait a few seconds, then retry; ensure port 9222 is available |
+| Profile locked error | Close all browser instances and remove lock file from profile directory |
 | Still on login page | User needs to authenticate manually in the browser window |
 | Stale session errors | Run `agent-browser close --all` and retry |
