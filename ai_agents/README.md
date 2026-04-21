@@ -65,6 +65,17 @@ agent-browser skills list
 agent-browser skills get core --full
 ```
 
+### agent-browser-authenticated-access
+
+Access authenticated web pages (Confluence, Jira, internal tools) using agent-browser with the user's real browser profile and cookies via Chrome DevTools Protocol (CDP).
+
+**Requires agent-browser to be installed first.**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/samirma/cookbook/main/ai_agents/skills/agent-browser-authenticated-access/SKILL.md \
+  --create-dirs -o ~/.agents/skills/agent-browser-authenticated-access/SKILL.md
+```
+
 ### Verification
 
 Verify the skills are installed correctly:
