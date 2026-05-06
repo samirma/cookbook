@@ -14,7 +14,7 @@ This directory contains the agent configurations and skills for extending AI ass
 Create the skills directory and set up the symlink:
 
 ```bash
-mkdir -p ~/.agents/skills/ && ln -s ~/.agents/skills ~/.config/agents/skills
+mkdir -p ~/.agents/skills/ && mkdir -p ~/.config/agents/ && ln -s ~/.agents/skills ~/.config/agents/skills
 ```
 
 ### raspberry-server-finder
