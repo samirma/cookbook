@@ -45,6 +45,9 @@ If this does not return valid JSON with a `"Browser"` field:
 2. If so, ask the user to close all browser windows, then retry starting with CDP
 3. Wait a few seconds after launch and retry the verification
 
+**If CDP is already active:**
+Do not assume the existing browser instance is using the user's authenticated profile. An existing CDP session may be running with a guest, incognito, or stale profile. Proceed to open the target page and verify you can access it. If the page shows a login screen, access denied, or "not found" when the user expects access, close the browser completely and restart it fresh with CDP on port 9222 using the user's default profile.
+
 ### 2. Open and read the target page
 ```bash
 agent-browser --cdp 9222 open "<TARGET_URL>"
@@ -53,10 +56,12 @@ agent-browser --cdp 9222 snapshot
 ```
 
 ### 3. Handle authentication if needed
-If login screen appears, ask user to authenticate in the opened browser, then:
-```bash
-agent-browser --cdp 9222 open "<TARGET_URL>" && agent-browser --cdp 9222 snapshot
-```
+If a login screen appears:
+- On a **freshly started** browser, ask the user to authenticate in the opened browser window, then re-open the page:
+  ```bash
+  agent-browser --cdp 9222 open "<TARGET_URL>" && agent-browser --cdp 9222 snapshot
+  ```
+- On an **existing** CDP session, the browser is likely not using the user's authenticated profile. Close all browser windows, restart the browser fresh with CDP on port 9222, then re-open the target page.
 
 ### 4. Complete the task
 Use the retrieved content to answer the user's request.
@@ -75,4 +80,5 @@ agent-browser close --all
 | CDP connection refused | Wait a few seconds, then retry; ensure port 9222 is available |
 | Profile locked error | Close all browser instances and remove lock file from profile directory |
 | Still on login page | User needs to authenticate manually in the browser window |
+| Existing CDP session not authenticated | Close all browser windows, restart the browser fresh with `--remote-debugging-port=9222`, and retry |
 | Stale session errors | Run `agent-browser close --all` and retry |
