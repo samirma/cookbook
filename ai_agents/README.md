@@ -42,7 +42,8 @@ Automates interactions for Apple-platform apps (iOS, tvOS, macOS) and Android de
 Install from https://agent-device.dev/:
 
 ```bash
-npx -g skills add callstackincubator/agent-device --skill dogfood
+npm install -g agent-device
+npx skills add callstackincubator/agent-device
 ```
 
 ### agent-browser
