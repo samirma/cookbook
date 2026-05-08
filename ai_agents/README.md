@@ -43,7 +43,7 @@ Install from https://agent-device.dev/:
 
 ```bash
 npm install -g agent-device
-npx skills add callstackincubator/agent-device
+npx skills add callstackincubator/agent-device -g -y
 ```
 
 ### agent-browser
