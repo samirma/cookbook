@@ -28,11 +28,17 @@ curl -fsSL https://raw.githubusercontent.com/samirma/cookbook/main/ai_agents/ski
 
 ### searxng-server
 
-Discover and query a SearXNG metasearch server on the local network via mDNS discovery.
+The agent's default web search tool. Query the internet using a self-hosted SearXNG metasearch engine discovered on the local network via mDNS. Features cache-aware IP discovery with health validation, and falls back to SearchWeb if the server is unreachable.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/samirma/cookbook/main/ai_agents/skills/searxng-server/SKILL.md \
-  --create-dirs -o ~/.agents/skills/searxng-server/SKILL.md
+BASE_URL="https://raw.githubusercontent.com/samirma/cookbook/main/ai_agents/skills/searxng-server"
+DEST_DIR="~/.agents/skills/searxng-server"
+
+curl -fsSL "${BASE_URL}/SKILL.md" --create-dirs -o "${DEST_DIR}/SKILL.md"
+curl -fsSL "${BASE_URL}/references/discovery.md" --create-dirs -o "${DEST_DIR}/references/discovery.md"
+curl -fsSL "${BASE_URL}/references/setup.md" --create-dirs -o "${DEST_DIR}/references/setup.md"
+curl -fsSL "${BASE_URL}/references/queries.md" --create-dirs -o "${DEST_DIR}/references/queries.md"
+curl -fsSL "${BASE_URL}/references/troubleshooting.md" --create-dirs -o "${DEST_DIR}/references/troubleshooting.md"
 ```
 
 ### agent-device
