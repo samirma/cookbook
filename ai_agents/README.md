@@ -32,7 +32,8 @@ The agent's default web search tool. Query the internet using a self-hosted Sear
 
 ```bash
 BASE_URL="https://raw.githubusercontent.com/samirma/cookbook/main/ai_agents/skills/searxng-server"
-DEST_DIR="~/.agents/skills/searxng-server"
+DEST_DIR="$HOME/.agents/skills/searxng-server"
+
 
 curl -fsSL "${BASE_URL}/SKILL.md" --create-dirs -o "${DEST_DIR}/SKILL.md"
 curl -fsSL "${BASE_URL}/references/discovery.md" --create-dirs -o "${DEST_DIR}/references/discovery.md"
