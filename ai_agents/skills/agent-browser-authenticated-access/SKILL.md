@@ -1,80 +1,104 @@
 ---
 name: agent-browser-authenticated-access
-description: Access authenticated web pages (Confluence, Jira, internal tools) using agent-browser with the user's browser profile and cookies. Use when you need to retrieve content from URLs that require authentication.
+description: Access authenticated web pages by opening them in the user's existing browser profile via Chrome DevTools Protocol (CDP) on port 9222. The browser must already be logged in to the target site. Only works with Chromium-based browsers (Google Chrome, Microsoft Edge, Brave).
 ---
 
 # Access Authenticated Web Pages
 
-## When to Use
-Use this skill when you need to retrieve content from URLs requiring authentication (Confluence, Jira, internal tools). Leverages the user's real browser profile and cookies.
+**Goal:** Open a URL using the user's existing browser profile so their active login sessions and cookies are available. This avoids asking the user to log in again.
 
-## Quick Reference
+**Requirement:** The user's browser must already be logged in to the target website. This skill does not perform authentication — it reuses the user's existing authenticated session.
 
-| Task | Command |
-|------|---------|
-| Open URL | `agent-browser --cdp 9222 open "<URL>"` |
-| Close session | `agent-browser close --all` |
+> **Browser Support:** CDP (Chrome DevTools Protocol) only works with Chromium-based browsers — Google Chrome, Microsoft Edge, Brave, or Chromium. **Do not use Firefox, Safari, or other non-Chromium browsers.**
 
-## Workflow
+## How It Works
 
-### 1. Start browser session
-Ensure that the target page really requires an authenticated session.
+1. Identify which browser the user wants to use (or is already logged in with).
+2. Start that browser with CDP enabled on port `9222`, using the user's **existing profile** (so cookies and sessions are preserved).
+3. Use `agent-browser` to connect to that CDP session and open the URL.
+4. The page opens with the user's real cookies — no extra login needed.
 
-**Determine which browser to use:**
-- **First**, check the persisted preference file: `~/.agents/skills/agent-browser-authenticated-access/.browser-config.json`.
-  - If it exists and contains a `"browser"` value, use that browser.
-  - If it does **not** exist, **ask the user** which browser they want to use or already have the target page logged in (e.g., Google Chrome, Microsoft Edge, Safari, Firefox).
-  - After the user answers, write the choice to `~/.agents/skills/agent-browser-authenticated-access/.browser-config.json` so it is reused automatically in future sessions.
-    ```json
-    {
-      "browser": "Microsoft Edge"
-    }
-    ```
+## Before You Start
 
-**Start the browser with CDP:**
-- Consult the agent-browser documentation at https://agent-browser.dev/cdp-model for the correct procedure to start the chosen browser with Chrome DevTools Protocol (CDP) enabled on port 9222, using the user's existing browser profile to leverage their authenticated sessions.
+Check the persisted preference file:
+```
+~/.agents/skills/agent-browser-authenticated-access/.browser-config.json
+```
 
-**Verify CDP is active:**
+- If it exists and contains a `"browser"` value, **use that browser**.
+- If it does **not** exist, **ask the user** which browser they are already logged in with (Google Chrome or Microsoft Edge only).
+- After the user answers, write the choice to the config file for future reuse:
+  ```json
+  {
+    "browser": "Google Chrome"
+  }
+  ```
+
+## Start the Browser with CDP
+
+You must start the exact browser from the config (or the user's answer) with CDP enabled on port `9222`. Use the user's default profile so their cookies and logins are available.
+
+**Close all existing browser windows first** to avoid profile lock errors. Then start the browser:
+
+**Google Chrome — macOS:**
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 &
+```
+
+**Google Chrome — Linux:**
+```bash
+google-chrome --remote-debugging-port=9222 &
+```
+
+**Microsoft Edge — macOS:**
+```bash
+/Applications/Microsoft\ Edge.app/Contents/MacOS/Microsoft\ Edge --remote-debugging-port=9222 &
+```
+
+**Microsoft Edge — Linux:**
+```bash
+microsoft-edge --remote-debugging-port=9222 &
+```
+
+> **Why no `--user-data-dir` flag?** Omitting it uses the browser's default profile directory — the same one the user uses for normal browsing. This is exactly what we want, because that's where their cookies and logins are stored.
+
+## Verify CDP Is Active
+
 ```bash
 curl -s http://localhost:9222/json/version
 ```
-If this does not return valid JSON with a `"Browser"` field:
-1. Check if the browser is already running without CDP enabled
-2. If so, ask the user to close all browser windows, then retry starting with CDP
-3. Wait a few seconds after launch and retry the verification
 
-**If CDP is already active:**
-Do not assume the existing browser instance is using the user's authenticated profile. An existing CDP session may be running with a guest, incognito, or stale profile. Proceed to open the target page and verify you can access it. If the page shows a login screen, access denied, or "not found" when the user expects access, close the browser completely and restart it fresh with CDP on port 9222 using the current user's profile.
+- **If it returns JSON** with a `"Browser"` field → CDP is running. Proceed to open the URL.
+- **If it fails** (connection refused, no response) → the browser did not start correctly. Close all browser windows and retry the start command above.
 
-### 2. Open and read the target page
+## Open the URL
+
 ```bash
 agent-browser --cdp 9222 open "<TARGET_URL>"
+agent-browser --cdp 9222 snapshot
 ```
 
-### 3. Handle authentication if needed
-If a login screen appears:
-- On a **freshly started** browser, ask the user to authenticate in the opened browser window, then re-open the page:
-  ```bash
-  agent-browser --cdp 9222 open "<TARGET_URL>"
-  ```
-- On an **existing** CDP session, the browser is likely not using the user's authenticated profile. Close all browser windows, restart the browser fresh with CDP on port 9222, then re-open the target page.
+If the snapshot shows the expected authenticated content, the task is complete.
 
-### 4. Complete the task
-Use the retrieved content to answer the user's request.
+## If a Login Page Appears
 
-### 5. Cleanup (optional)
+This means the browser is **not** using the user's authenticated profile. Possible causes:
+- The browser was started with a guest or temporary profile.
+- The user is not actually logged in to this site.
+- An existing CDP session was running with a different profile.
+
+**Fix:**
+1. Close all browser windows completely.
+2. Restart the browser using the commands in **Start the Browser with CDP** above.
+3. Reopen the URL and recapture:
+   ```bash
+   agent-browser --cdp 9222 open "<TARGET_URL>" && agent-browser --cdp 9222 snapshot
+   ```
+4. If it still shows a login page, ask the user to log in manually in the browser window, then recapture again.
+
+## Cleanup
+
+Close only the CDP-connected session:
 ```bash
-agent-browser close --all
+agent-browser --cdp 9222 close
 ```
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Browser fails to start | Check Chrome or Edge is installed; verify no conflicting instances |
-| CDP not responding | Browser may be running without CDP. Ask user to close all browser windows and retry |
-| CDP connection refused | Wait a few seconds, then retry; ensure port 9222 is available |
-| Profile locked error | Close all browser instances and remove lock file from profile directory |
-| Still on login page | User needs to authenticate manually in the browser window |
-| Existing CDP session not authenticated | Close all browser windows, restart the browser fresh with `--remote-debugging-port=9222`, and retry |
-| Stale session errors | Run `agent-browser close --all` and retry |
