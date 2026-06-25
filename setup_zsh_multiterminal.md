@@ -179,7 +179,14 @@ omz reload
 
 ### 3.3 History Configuration
 
-This script safely adds history settings, only adding what's missing and preserving your existing configuration:
+Zsh supports two history modes. Choose the one that fits your workflow:
+
+- **Shared history (default):** All open terminal sessions share the same history in real time. Good when you want to recall commands from any terminal.
+- **Per-terminal history:** Each terminal keeps its own command history until the session exits, similar to bash. Good when each terminal has a different task/context.
+
+#### 3.3.1 Shared History Mode (Default)
+
+This script safely adds shared history settings, only adding what's missing and preserving your existing configuration:
 
 ```bash
 #!/bin/bash
@@ -201,7 +208,7 @@ add_if_missing() {
 # Backup
 cp "$ZSHRC" "${ZSHRC}.backup.$(date +%Y%m%d)"
 
-echo "Configuring history settings..."
+echo "Configuring shared history settings..."
 
 # Add each option individually (only if missing)
 add_if_missing "setopt SHARE_HISTORY" "setopt SHARE_HISTORY"
@@ -216,18 +223,47 @@ echo "Current history settings in $ZSHRC:"
 grep -E "^(setopt.*HIST|export HIST)" "$ZSHRC"
 ```
 
-**What this does:**
-1. Creates a backup of your `~/.zshrc`
-2. Checks each setting individually
-3. Only adds settings that don't already exist
-4. Shows you exactly what was added vs. what already existed
-5. Displays the final history configuration
+#### 3.3.2 Per-Terminal History Mode
+
+If you prefer bash-like behavior where each session keeps its own history list, use this script instead:
+
+```bash
+#!/bin/bash
+
+ZSHRC="$HOME/.zshrc"
+
+# Backup
+cp "$ZSHRC" "${ZSHRC}.backup.$(date +%Y%m%d)"
+
+echo "Switching to per-terminal history mode..."
+
+# Disable shared history options
+sed -i '' 's/^[[:space:]]*setopt SHARE_HISTORY/# setopt SHARE_HISTORY/' "$ZSHRC"
+sed -i '' 's/^[[:space:]]*setopt INC_APPEND_HISTORY/# setopt INC_APPEND_HISTORY/' "$ZSHRC"
+
+# Enable append history if not already set
+if ! grep -qE "^setopt APPEND_HISTORY$" "$ZSHRC" 2>/dev/null; then
+    echo "setopt APPEND_HISTORY" >> "$ZSHRC"
+    echo "Added: setopt APPEND_HISTORY"
+fi
+
+echo ""
+echo "Current history settings in $ZSHRC:"
+grep -E "^(setopt.*HIST|export HIST)" "$ZSHRC"
+```
+
+Then reload zsh:
+
+```bash
+source ~/.zshrc
+```
 
 **Settings explained:**
 | Setting | Purpose |
 |---------|---------|
 | `SHARE_HISTORY` | Share history between all open terminal sessions |
 | `INC_APPEND_HISTORY` | Save commands to history immediately (not on exit) |
+| `APPEND_HISTORY` | Save commands only when the shell exits (per-terminal behavior) |
 | `HIST_EXPIRE_DUPS_FIRST` | When history is full, delete duplicates before old entries |
 | `HIST_IGNORE_DUPS` | Don't save a command if it's identical to the previous one |
 | `HISTSIZE=100000` | Keep 100,000 commands in memory |
