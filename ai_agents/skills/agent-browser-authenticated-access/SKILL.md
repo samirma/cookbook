@@ -1,6 +1,6 @@
 ---
 name: agent-browser-authenticated-access
-description: Access authenticated web pages by launching the user's configured Chromium browser with CDP on port 9222 and the exact existing profile that already contains their cookies. Use when a task needs Jira, GitHub, or another logged-in page in the user's browser session.
+description: Access authenticated web pages by launching the user's configured Chromium browser with CDP on port 9222 and the exact existing profile that already contains their cookies. Use whenever you need to open a web page that requires a login to access it.
 ---
 
 # Access Authenticated Web Pages
