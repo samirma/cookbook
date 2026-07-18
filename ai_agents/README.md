@@ -1,10 +1,9 @@
 # AI Agents
 
-This directory contains the agent configurations and skills for extending AI assistant capabilities.
+This directory contains the agent skills for extending AI assistant capabilities.
 
 ## Contents
 
-- **`opencode/`** — OpenCode multi-agent development workflow configuration (agents, models, provider setup)
 - **`skills/`** — Reusable agent skills installed via curl or package managers
 
 ## Agent Skills Installation Guide
@@ -71,17 +70,6 @@ agent-browser skills list
 
 # Get the core browser automation skill
 agent-browser skills get core --full
-```
-
-### agent-browser-authenticated-access
-
-Access authenticated web pages (Confluence, Jira, internal tools) using agent-browser with the user's real browser profile and cookies via Chrome DevTools Protocol (CDP).
-
-**Requires agent-browser to be installed first.**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/samirma/cookbook/main/ai_agents/skills/agent-browser-authenticated-access/SKILL.md \
-  --create-dirs -o ~/.agents/skills/agent-browser-authenticated-access/SKILL.md
 ```
 
 ### Verification

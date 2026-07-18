@@ -19,4 +19,4 @@ A collection of guides and scripts for setting up development environments, oper
 
 ## AI Agents
 
-- **[ai_agents/README.md](ai_agents/README.md)** — Agent skills installation guide and OpenCode multi-agent configuration.
+- **[ai_agents/README.md](ai_agents/README.md)** — Agent skills installation guide.
