@@ -16,7 +16,7 @@ Query a self-hosted SearXNG instance that aggregates results from multiple searc
 
 The SearXNG server IP is cached so it does not need to be rediscovered on every search.
 
-1. **Load from cache** — read `~/.cache/searxng-server/ip`
+1. **Load from cache** — read `~/.cache/searxng-server/ip` to use in the SEARXNG_IP environment variable
 2. **Validate** — hit the health endpoint; if it responds, use it
 3. **Discover** — if cached IP is missing or stale, discover via mDNS or network scan
 4. **Save** — write the validated IP back to the cache file
@@ -25,7 +25,6 @@ The SearXNG server IP is cached so it does not need to be rediscovered on every 
 
 | Task | Command |
 |------|---------|
-| Load cached IP | `SEARXNG_IP=$(cat ~/.cache/searxng-server/ip 2>/dev/null)` |
 | Validate | `curl -s --connect-timeout 3 "http://${SEARXNG_IP}:8080/healthz"` |
 | Search | `curl -s --connect-timeout 5 --max-time 15 "http://${SEARXNG_IP}:8080/search?q=QUERY&format=json" \| jq` |
 | Save IP | `mkdir -p ~/.cache/searxng-server && echo "$SEARXNG_IP" > ~/.cache/searxng-server/ip` |
