@@ -5,7 +5,8 @@ description: >
   SearXNG metasearch engine discovered on the local network via mDNS.
   Use when the user asks to search, look up, find, research, or fact-check anything;
   when current or external information is needed; or for any task requiring web search.
-  If the SearXNG server is unreachable after discovery attempts, fall back to the SearchWeb tool.
+  If the local server is unreachable after discovery attempts, fall back to the built-in
+  WebSearch tool.
 ---
 
 # SearXNG Web Search
@@ -20,6 +21,14 @@ The SearXNG server IP is cached so it does not need to be rediscovered on every 
 2. **Validate** — hit the health endpoint; if it responds, use it
 3. **Discover** — if cached IP is missing or stale, discover via mDNS or network scan
 4. **Save** — write the validated IP back to the cache file
+
+## Fallback Chain
+
+Work down this chain and stop at the first tier that yields results. Do not
+retry a failed tier within the same task:
+
+1. **Local server** — cache → validate → discover (the workflow above)
+2. **WebSearch** — the built-in web search tool, when the local server is unavailable
 
 ## Quick Reference
 
