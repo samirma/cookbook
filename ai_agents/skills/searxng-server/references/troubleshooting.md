@@ -32,6 +32,10 @@ dns-sd -Z _http._tcp local | grep -A 3 -i searxng
    nmap -p 8080 --open 192.168.1.0/24
    curl -s --connect-timeout 5 "http://<IP>:8080/healthz"
    ```
+6. **Local server truly unreachable** — stop diagnosing mid-task and continue
+   the search via the fallback chain: a validated public instance
+   (see [public-fallback.md](public-fallback.md)), then the built-in
+   WebSearch tool
 
 ## Connection Issues
 

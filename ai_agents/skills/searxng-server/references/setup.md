@@ -35,6 +35,7 @@ mkdir -p ~/.cache/searxng-server
 |----------|-------------|---------|
 | `SEARXNG_IP` | Server IP address (overrides cache) | (from cache or discovery) |
 | `SEARXNG_PORT` | Server port override | `8080` |
+| `SEARXNG_PUBLIC_URL` | Pinned public/remote instance tried first in the public fallback tier (full URL) | (none) |
 
 ## Server-Side Requirement
 
