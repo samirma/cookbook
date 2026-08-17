@@ -42,6 +42,28 @@ curl -fsSL "${BASE_URL}/references/queries.md" --create-dirs -o "${DEST_DIR}/ref
 curl -fsSL "${BASE_URL}/references/troubleshooting.md" --create-dirs -o "${DEST_DIR}/references/troubleshooting.md"
 ```
 
+### market-research-report
+
+Research any tradable asset — cryptocurrency, stock, ETF, index, commodity, FX pair — and return a source-cited JSON market report with probability-weighted price predictions over a caller-supplied list of prediction horizons. Returns JSON only: it writes no files, renders no HTML, and depends on no other skill. The caller decides how to persist and present the result.
+
+The skill lives in this repo, so installing it as a **symlink** keeps `~/.agents/skills/` working while every edit stays tracked here:
+
+```bash
+ln -s "$(pwd)/ai_agents/skills/market-research-report" ~/.agents/skills/market-research-report
+```
+
+Or copy it onto another machine:
+
+```bash
+BASE_URL="https://raw.githubusercontent.com/samirma/cookbook/main/ai_agents/skills/market-research-report"
+DEST_DIR="$HOME/.agents/skills/market-research-report"
+
+curl -fsSL "${BASE_URL}/SKILL.md" --create-dirs -o "${DEST_DIR}/SKILL.md"
+curl -fsSL "${BASE_URL}/assets/market_report.schema.json" --create-dirs -o "${DEST_DIR}/assets/market_report.schema.json"
+```
+
+Reports are informational only, not financial advice.
+
 ### agent-device
 
 Automates interactions for Apple-platform apps (iOS, tvOS, macOS) and Android devices.
@@ -81,4 +103,8 @@ Verify the skills are installed correctly:
 ls ~/.agents/skills/
 ```
 
-Each skill directory should contain a `SKILL.md` file.
+Each skill directory should contain a `SKILL.md` file. For skills installed as symlinks, check that the link resolves:
+
+```bash
+ls -l ~/.agents/skills/ && find -L ~/.agents/skills -name SKILL.md
+```

@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "market_report.schema.json",
+  "title": "Market Deep-Dive & Predictive Report",
+  "description": "Asset-agnostic schema for a market research report. The asset, the prediction horizons, and the research areas actually covered are all recorded in metadata.request, so the document is self-describing. Research findings are keyed by area rather than by fixed section names, so the same schema fits a cryptocurrency, a stock, an ETF, an index, a commodity or an FX pair. All percentage fields are plain numbers (e.g. 1.5 means +1.5%). Price fields are in metadata.request.asset.quote_currency, or index points for an index.",
+  "type": "object",
+  "required": ["metadata", "predictions", "confidence_protocol", "executive_summary", "research_findings", "sources"],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["generated_at_utc", "request", "market_status", "asset_price", "price_observed_at_utc", "primary_price_source", "primary_price_provider", "price_cross_check", "price_cross_check_observed_at_utc", "price_cross_check_source", "price_cross_check_provider", "disclaimer"],
+      "additionalProperties": false,
+      "properties": {
+        "generated_at_utc": { "type": "string", "format": "date-time", "description": "Exact generation timestamp, UTC, ISO 8601" },
+        "request": { "$ref": "#/$defs/request" },
+        "market_status": {
+          "type": "string",
+          "enum": ["open", "closed", "pre_market", "after_hours"],
+          "description": "Trading status of the asset's primary venue at generation time. A 24/7 venue is normally 'open'."
+        },
+        "last_close_utc": { "type": ["string", "null"], "format": "date-time", "description": "UTC time of the most recent regular-session close. Required in practice whenever market_status is not 'open'." },
+        "next_open_utc": { "type": ["string", "null"], "format": "date-time", "description": "UTC time of the next regular-session open, when the market is not currently open." },
+        "asset_price": { "type": "number", "exclusiveMinimum": 0, "description": "Current price or index level, in the quote currency or index points" },
+        "price_observed_at_utc": { "type": "string", "format": "date-time", "description": "UTC time the primary price was observed. When the market is closed this is the last-session close; when open it should be within 15 minutes of generation." },
+        "market_cap": { "type": ["number", "null"], "description": "Market capitalisation in the quote currency, if applicable and retrieved" },
+        "primary_price_source": { "type": "string", "format": "uri", "description": "URL used for the authoritative price reading" },
+        "primary_price_provider": { "type": "string", "minLength": 1, "description": "Provider publishing the authoritative price" },
+        "price_cross_check": { "type": "number", "exclusiveMinimum": 0, "description": "Price or level from an independent source" },
+        "price_cross_check_observed_at_utc": { "type": "string", "format": "date-time", "description": "UTC time the cross-check price was observed" },
+        "price_cross_check_source": { "type": "string", "format": "uri", "description": "URL used for the independent cross-check" },
+        "price_cross_check_provider": { "type": "string", "minLength": 1, "description": "Independent provider publishing the cross-check price" },
+        "price_cross_check_instrument": { "type": ["string", "null"], "description": "Instrument actually quoted by the cross-check, e.g. '^GSPC', 'SPY (ETF proxy)', 'ES front-month future'. Set whenever it differs from the primary instrument." },
+        "price_cross_check_is_proxy": { "type": "boolean", "default": false, "description": "True when the cross-check quotes a proxy instrument rather than the same instrument as the primary source. Explain the basis in data_quality_notes." },
+        "disclaimer": { "type": "string", "description": "Not-financial-advice disclaimer" }
+      }
+    },
+    "predictions": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One prediction per entry of metadata.request.timeframes, in the same order.",
+      "items": { "$ref": "#/$defs/prediction" }
+    },
+    "confidence_protocol": {
+      "type": "object",
+      "description": "Record of the confidence-threshold protocol: required whenever any initial confidence score was < 60.",
+      "required": ["triggered", "initial_confidence_scores", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "triggered": { "type": "boolean" },
+        "initial_confidence_scores": {
+          "type": "array",
+          "description": "Initial (pre-protocol) confidence scores per timeframe",
+          "items": {
+            "type": "object",
+            "required": ["timeframe_id", "score"],
+            "additionalProperties": false,
+            "properties": {
+              "timeframe_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+              "score": { "$ref": "#/$defs/confidence" }
+            }
+          }
+        },
+        "plan_executed": { "type": "array", "items": { "type": "string" }, "description": "Steps taken to acquire missing data" },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "triggered": { "const": true } } },
+          "then": { "required": ["initial_confidence_scores", "plan_executed"] }
+        }
+      ]
+    },
+    "executive_summary": {
+      "type": "object",
+      "required": ["report_date_utc", "asset_price", "overview", "market_state", "price_action"],
+      "additionalProperties": false,
+      "properties": {
+        "report_date_utc": { "type": "string", "format": "date", "description": "Current date (UTC); must match the date of metadata.generated_at_utc" },
+        "asset_price": { "type": "number", "exclusiveMinimum": 0, "description": "Must equal metadata.asset_price" },
+        "overview": { "type": "string", "description": "Brief overview of the market state and sentiment" },
+        "market_state": { "type": "string", "description": "One-line characterization, e.g. 'oversold, deleveraged, quietly accumulated'" },
+        "key_metrics": {
+          "type": "array",
+          "description": "Headline badges, e.g. session change, a sentiment reading, distance from all-time high",
+          "items": {
+            "type": "object",
+            "required": ["label", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string" },
+              "value": { "type": ["string", "number"] }
+            }
+          }
+        },
+        "price_action": {
+          "type": "object",
+          "description": "Two observation windows: a short one (an hour, or the final hour of the most recent session) and a long one (a day, or the last full trading session). Each names itself via window_label.",
+          "required": ["short_window", "long_window"],
+          "additionalProperties": false,
+          "properties": {
+            "short_window": { "$ref": "#/$defs/price_action_window" },
+            "long_window": { "$ref": "#/$defs/price_action_window" }
+          }
+        }
+      }
+    },
+    "research_findings": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One entry per research area in metadata.request.research_areas, in the same order. Areas are not fixed by this schema: they are either supplied by the caller or derived by the skill from the asset class, so the same structure carries crypto whale flows, equity institutional positioning, commodity inventories, or anything else.",
+      "items": { "$ref": "#/$defs/research_finding" }
+    },
+    "sentiment_index": {
+      "type": ["object", "null"],
+      "description": "Optional structured sentiment gauge, filled when a sentiment area was researched and a headline index exists. The scale is declared explicitly so a 0-100 Fear & Greed index, a VIX level, or a put/call ratio all fit.",
+      "required": ["name", "value", "scale_min", "scale_max", "classification", "source_urls"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "e.g. 'Crypto Fear & Greed Index', 'CNN Fear & Greed Index', 'CBOE VIX'" },
+        "value": { "type": "number" },
+        "scale_min": { "type": "number", "description": "Lower bound of the index's scale" },
+        "scale_max": { "type": "number", "description": "Upper bound of the index's scale" },
+        "classification": { "type": "string", "minLength": 1, "description": "e.g. 'Fear', 'Extreme Greed', 'Elevated volatility'" },
+        "source_urls": { "$ref": "#/$defs/source_urls" }
+      }
+    },
+    "data_quality_notes": {
+      "type": "array",
+      "description": "Notes on source discrepancies, discarded readings, cross-validation, any proxy instrument used, and any requested research area that could not be covered",
+      "items": { "type": "string" }
+    },
+    "sources": {
+      "type": "object",
+      "required": ["successfully_accessed", "access_failed"],
+      "additionalProperties": false,
+      "properties": {
+        "successfully_accessed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["url", "title", "provider", "retrieved_at_utc", "usage"],
+            "additionalProperties": false,
+            "properties": {
+              "url": { "type": "string", "format": "uri" },
+              "title": { "type": "string" },
+              "provider": { "type": "string", "minLength": 1, "description": "Publisher or data provider" },
+              "retrieved_at_utc": { "type": "string", "format": "date-time", "description": "UTC time the source was accessed" },
+              "usage": { "type": "string", "enum": ["opened"], "description": "Full content or API data was retrieved and used" },
+              "note": { "type": ["string", "null"], "description": "e.g. 'stale snapshot - excluded'" }
+            }
+          }
+        },
+        "access_failed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["url", "attempted_at_utc", "reason"],
+            "additionalProperties": false,
+            "properties": {
+              "url": { "type": "string", "format": "uri" },
+              "title": { "type": ["string", "null"] },
+              "attempted_at_utc": { "type": "string", "format": "date-time", "description": "UTC time access was attempted" },
+              "reason": { "type": "string", "description": "Why access failed, e.g. 'empty response body'" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "confidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "request": {
+      "type": "object",
+      "description": "The inputs this report was generated for, echoed verbatim so the report is self-describing and independently checkable.",
+      "required": ["asset", "timeframes", "research_areas", "research_areas_source"],
+      "additionalProperties": false,
+      "properties": {
+        "asset": {
+          "type": "object",
+          "required": ["name", "symbol", "asset_class", "quote_currency", "price_unit"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string", "minLength": 1, "description": "e.g. 'Bitcoin', 'S&P 500'" },
+            "symbol": { "type": "string", "minLength": 1, "description": "e.g. 'BTC', '^GSPC'" },
+            "asset_class": {
+              "type": "string",
+              "enum": ["crypto", "equity", "etf", "equity_index", "commodity", "fx", "rates", "other"]
+            },
+            "quote_currency": { "type": "string", "minLength": 1, "description": "e.g. 'USD'. For an index quoted in points, the currency it is denominated in." },
+            "price_unit": { "type": "string", "minLength": 1, "description": "Human-readable unit, e.g. 'USD per BTC', 'index points'" }
+          }
+        },
+        "timeframes": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The ordered, verbatim prediction horizon entries supplied by the caller, in any phrasing that resolves to a future UTC instant. predictions[] must correspond one-to-one in this order.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "timeframes_source": { "type": ["string", "null"], "description": "Where the timeframes came from, when read from a file or other named origin" },
+        "research_areas": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The ordered research areas actually covered. Either supplied verbatim by the caller, or derived by the skill as a reasonable set for this asset class. research_findings[] must correspond one-to-one in this order.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "research_areas_source": {
+          "type": "string",
+          "enum": ["caller", "derived"],
+          "description": "'caller' when the areas were supplied by the requester and used as given; 'derived' when the skill chose them from the asset class."
+        }
+      }
+    },
+    "research_finding": {
+      "type": "object",
+      "description": "What the research turned up for one area. Deliberately shape-neutral so any area fits: narrative summary, discrete observations, and optional numeric or dated readings.",
+      "required": ["area", "summary", "observations", "source_urls"],
+      "additionalProperties": false,
+      "properties": {
+        "area": { "type": "string", "minLength": 1, "description": "The research area, matching its entry in metadata.request.research_areas" },
+        "summary": { "type": "string", "minLength": 1, "description": "What this area showed, and what it implies for the predictions" },
+        "observations": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Discrete findings: events, flows, readings, filings. One per string.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "data_points": {
+          "type": "array",
+          "description": "Optional numeric or dated readings worth surfacing, e.g. a scheduled release, an index level, a net flow",
+          "items": {
+            "type": "object",
+            "required": ["label", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "value": { "type": ["string", "number"] },
+              "unit": { "type": ["string", "null"] },
+              "when": { "type": ["string", "null"], "description": "Date, period, or scheduled timing, free-form" },
+              "probability_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 100, "description": "For a forward-looking item, its assessed probability" }
+            }
+          }
+        },
+        "source_urls": { "$ref": "#/$defs/source_urls" },
+        "notes": { "type": ["string", "null"], "description": "Caveats, gaps, or why a sub-topic could not be covered" }
+      }
+    },
+    "prediction": {
+      "type": "object",
+      "required": ["timeframe_id", "timeframe_label", "horizon_end_utc", "predicted_move_pct", "confidence_score", "reasoning", "source_urls", "scenarios"],
+      "additionalProperties": false,
+      "properties": {
+        "timeframe_id": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Slug derived from the timeframe entry: lowercase, each run of non-alphanumeric characters replaced with '_', leading and trailing '_' trimmed. Unique within predictions." },
+        "timeframe_label": { "type": "string", "description": "The timeframe entry from metadata.request.timeframes, optionally followed by one parenthesized annotation" },
+        "horizon_end_utc": { "type": "string", "format": "date-time", "description": "Concrete UTC cutoff, after metadata.generated_at_utc" },
+        "predicted_move_pct": { "type": "number", "description": "Headline predicted price movement in percent; the probability-weighted mean of the scenarios" },
+        "range_pct": {
+          "type": "object",
+          "required": ["min", "max"],
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          },
+          "description": "Expected range of movement in percent; min must not exceed max"
+        },
+        "confidence_score": { "$ref": "#/$defs/confidence" },
+        "reasoning": { "type": "string", "description": "Justification tying the prediction to the research findings" },
+        "source_urls": { "$ref": "#/$defs/source_urls", "description": "Accessed sources that directly support the prediction" },
+        "scenarios": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Probability-weighted paths; probabilities must sum to 100",
+          "items": {
+            "type": "object",
+            "required": ["scenario", "probability_pct", "expected_move_pct", "basis"],
+            "additionalProperties": false,
+            "properties": {
+              "scenario": { "type": "string" },
+              "probability_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+              "expected_move_pct": { "type": "number", "description": "Outcome of this scenario in percent" },
+              "basis": { "type": "string" }
+            }
+          }
+        },
+        "notes": { "type": ["string", "null"], "description": "Caveats, e.g. how an ambiguous horizon was resolved, or a horizon that lands while the market is shut" }
+      }
+    },
+    "price_action_window": {
+      "type": "object",
+      "required": ["window_label", "change_pct", "description", "source_urls"],
+      "additionalProperties": false,
+      "properties": {
+        "window_label": { "type": "string", "minLength": 1, "description": "What this window covers, e.g. 'last hour', 'last 24 hours', 'last full trading session'" },
+        "window_start_utc": { "type": ["string", "null"], "format": "date-time" },
+        "window_end_utc": { "type": ["string", "null"], "format": "date-time" },
+        "change_pct": { "type": "number" },
+        "open": { "type": ["number", "null"] },
+        "close": { "type": ["number", "null"] },
+        "low": { "type": ["number", "null"] },
+        "high": { "type": ["number", "null"] },
+        "description": { "type": "string", "description": "Likely reasons for the movement" },
+        "source_urls": { "$ref": "#/$defs/source_urls" }
+      }
+    },
+    "source_urls": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "format": "uri" }
+    }
+  }
+}
