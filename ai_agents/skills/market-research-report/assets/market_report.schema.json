@@ -9,9 +9,10 @@
   "properties": {
     "metadata": {
       "type": "object",
-      "required": ["generated_at_utc", "request", "market_status", "asset_price", "price_observed_at_utc", "primary_price_source", "primary_price_provider", "price_cross_check", "price_cross_check_observed_at_utc", "price_cross_check_source", "price_cross_check_provider", "disclaimer"],
+      "required": ["schema_version", "generated_at_utc", "request", "market_status", "asset_price", "price_observed_at_utc", "primary_price_source", "primary_price_provider", "price_cross_check", "price_cross_check_observed_at_utc", "price_cross_check_source", "price_cross_check_provider", "disclaimer"],
       "additionalProperties": false,
       "properties": {
+        "schema_version": { "const": "2", "description": "Version of this schema the report conforms to; lets archived reports self-identify" },
         "generated_at_utc": { "type": "string", "format": "date-time", "description": "Exact generation timestamp, UTC, ISO 8601" },
         "request": { "$ref": "#/$defs/request" },
         "market_status": {
@@ -32,8 +33,35 @@
         "price_cross_check_provider": { "type": "string", "minLength": 1, "description": "Independent provider publishing the cross-check price" },
         "price_cross_check_instrument": { "type": ["string", "null"], "description": "Instrument actually quoted by the cross-check, e.g. '^GSPC', 'SPY (ETF proxy)', 'ES front-month future'. Set whenever it differs from the primary instrument." },
         "price_cross_check_is_proxy": { "type": "boolean", "default": false, "description": "True when the cross-check quotes a proxy instrument rather than the same instrument as the primary source. Explain the basis in data_quality_notes." },
-        "disclaimer": { "type": "string", "description": "Not-financial-advice disclaimer" }
-      }
+        "disclaimer": { "type": "string", "minLength": 1, "description": "Not-financial-advice disclaimer" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "market_status": { "enum": ["closed", "pre_market", "after_hours"] } },
+            "required": ["market_status"]
+          },
+          "then": {
+            "required": ["last_close_utc", "next_open_utc"],
+            "properties": {
+              "last_close_utc": { "type": "string" },
+              "next_open_utc": { "type": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "price_cross_check_is_proxy": { "const": true } },
+            "required": ["price_cross_check_is_proxy"]
+          },
+          "then": {
+            "required": ["price_cross_check_instrument"],
+            "properties": {
+              "price_cross_check_instrument": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      ]
     },
     "predictions": {
       "type": "array",
@@ -61,7 +89,7 @@
             }
           }
         },
-        "plan_executed": { "type": "array", "items": { "type": "string" }, "description": "Steps taken to acquire missing data" },
+        "plan_executed": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Steps taken to acquire missing data" },
         "notes": { "type": "string" }
       },
       "allOf": [
@@ -78,8 +106,8 @@
       "properties": {
         "report_date_utc": { "type": "string", "format": "date", "description": "Current date (UTC); must match the date of metadata.generated_at_utc" },
         "asset_price": { "type": "number", "exclusiveMinimum": 0, "description": "Must equal metadata.asset_price" },
-        "overview": { "type": "string", "description": "Brief overview of the market state and sentiment" },
-        "market_state": { "type": "string", "description": "One-line characterization, e.g. 'oversold, deleveraged, quietly accumulated'" },
+        "overview": { "type": "string", "minLength": 1, "description": "Brief overview of the market state and sentiment" },
+        "market_state": { "type": "string", "minLength": 1, "description": "One-line characterization, e.g. 'oversold, deleveraged, quietly accumulated'" },
         "key_metrics": {
           "type": "array",
           "description": "Headline badges, e.g. session change, a sentiment reading, distance from all-time high",
@@ -194,6 +222,7 @@
         "timeframes": {
           "type": "array",
           "minItems": 1,
+          "uniqueItems": true,
           "description": "The ordered, verbatim prediction horizon entries supplied by the caller, in any phrasing that resolves to a future UTC instant. predictions[] must correspond one-to-one in this order.",
           "items": { "type": "string", "minLength": 1 }
         },
@@ -201,8 +230,9 @@
         "research_areas": {
           "type": "array",
           "minItems": 1,
-          "description": "The ordered research areas actually covered. Either supplied verbatim by the caller, or derived by the skill as a reasonable set for this asset class. research_findings[] must correspond one-to-one in this order.",
-          "items": { "type": "string", "minLength": 1 }
+          "uniqueItems": true,
+          "description": "The ordered research areas actually covered, as SHORT names (a few words each, suitable as section titles), not paragraphs of guidance. Either supplied verbatim by the caller, or derived by the skill as a reasonable set for this asset class. research_findings[] must correspond one-to-one in this order.",
+          "items": { "type": "string", "minLength": 1, "maxLength": 80 }
         },
         "research_areas_source": {
           "type": "string",
@@ -247,25 +277,26 @@
     },
     "prediction": {
       "type": "object",
-      "required": ["timeframe_id", "timeframe_label", "horizon_end_utc", "predicted_move_pct", "confidence_score", "reasoning", "source_urls", "scenarios"],
+      "required": ["timeframe_id", "timeframe_label", "horizon_end_utc", "baseline_price", "predicted_move_pct", "confidence_score", "reasoning", "source_urls", "scenarios"],
       "additionalProperties": false,
       "properties": {
         "timeframe_id": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Slug derived from the timeframe entry: lowercase, each run of non-alphanumeric characters replaced with '_', leading and trailing '_' trimmed. Unique within predictions." },
-        "timeframe_label": { "type": "string", "description": "The timeframe entry from metadata.request.timeframes, optionally followed by one parenthesized annotation" },
+        "timeframe_label": { "type": "string", "minLength": 1, "description": "The timeframe entry from metadata.request.timeframes, optionally followed by one parenthesized annotation" },
         "horizon_end_utc": { "type": "string", "format": "date-time", "description": "Concrete UTC cutoff, after metadata.generated_at_utc" },
-        "predicted_move_pct": { "type": "number", "description": "Headline predicted price movement in percent; the probability-weighted mean of the scenarios" },
+        "baseline_price": { "type": "number", "exclusiveMinimum": 0, "description": "The price this prediction's move is measured FROM. Normally metadata.asset_price; when the market is closed it is the last regular-session close. Any other baseline (e.g. futures-implied) must be explained in notes. predicted_move_pct means: ((price at horizon_end_utc) - baseline_price) / baseline_price * 100, resolved at the last available print if the venue is closed at the horizon." },
+        "predicted_move_pct": { "type": "number", "minimum": -100, "description": "Headline predicted price movement in percent from baseline_price; must equal the probability-weighted mean of the scenarios within 0.05 percentage points and agree with it in sign" },
         "range_pct": {
           "type": "object",
           "required": ["min", "max"],
           "additionalProperties": false,
           "properties": {
-            "min": { "type": "number" },
-            "max": { "type": "number" }
+            "min": { "type": "number", "minimum": -100 },
+            "max": { "type": "number", "minimum": -100 }
           },
-          "description": "Expected range of movement in percent; min must not exceed max"
+          "description": "Expected range of movement in percent; min must not exceed max and the range should contain predicted_move_pct"
         },
         "confidence_score": { "$ref": "#/$defs/confidence" },
-        "reasoning": { "type": "string", "description": "Justification tying the prediction to the research findings" },
+        "reasoning": { "type": "string", "minLength": 1, "description": "Justification tying the prediction to the research findings" },
         "source_urls": { "$ref": "#/$defs/source_urls", "description": "Accessed sources that directly support the prediction" },
         "scenarios": {
           "type": "array",
@@ -276,10 +307,10 @@
             "required": ["scenario", "probability_pct", "expected_move_pct", "basis"],
             "additionalProperties": false,
             "properties": {
-              "scenario": { "type": "string" },
+              "scenario": { "type": "string", "minLength": 1 },
               "probability_pct": { "type": "number", "minimum": 0, "maximum": 100 },
-              "expected_move_pct": { "type": "number", "description": "Outcome of this scenario in percent" },
-              "basis": { "type": "string" }
+              "expected_move_pct": { "type": "number", "minimum": -100, "description": "Outcome of this scenario in percent from baseline_price" },
+              "basis": { "type": "string", "minLength": 1 }
             }
           }
         },

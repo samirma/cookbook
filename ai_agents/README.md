@@ -44,7 +44,7 @@ curl -fsSL "${BASE_URL}/references/troubleshooting.md" --create-dirs -o "${DEST_
 
 ### market-research-report
 
-Research any tradable asset — cryptocurrency, stock, ETF, index, commodity, FX pair — and return a source-cited JSON market report with probability-weighted price predictions over a caller-supplied list of prediction horizons. Returns JSON only: it writes no files, renders no HTML, and depends on no other skill. The caller decides how to persist and present the result.
+Research any tradable asset — cryptocurrency, stock, ETF, index, commodity, FX pair — and return a source-cited JSON market report with probability-weighted price predictions over a caller-supplied list of prediction horizons. The skill self-verifies before returning: it recomputes the scenario arithmetic, checks every cross-reference, and validates the JSON against its bundled schema. When the host supports subagents it runs as a gauntlet — a research planner, parallel researchers, a blind confidence critic, and an evidence-improvement loop gated on the confidence threshold. Returns JSON only: it writes no files, renders no HTML, and depends on no other skill. The caller decides how to persist and present the result.
 
 The skill lives in this repo, so installing it as a **symlink** keeps `~/.agents/skills/` working while every edit stays tracked here:
 
