@@ -1,216 +1,232 @@
 ---
 name: market-research-report
-description: >
-  Research any tradable asset — cryptocurrency, stock, ETF, index, commodity, FX pair, or
-  anything else with a quoted price — and return a source-cited, self-verified JSON market
-  report with probability-weighted price predictions over a caller-supplied list of
-  prediction horizons, expressed however the caller likes so long as each resolves to a
-  future UTC instant. Research areas may be supplied by the caller, or left to the skill to
-  derive a reasonable set for that asset class. Use when asked to research, analyse, or
-  forecast an asset's price movement, or to produce market report data. Returns the JSON
-  only — it does not write files, does not render HTML, and depends on no other skill.
+description: Research one tradable asset across relevant research areas and return a source-checked JSON report with current state and confidence-calibrated price predictions. Use for market research, asset analysis, and price forecasts. Returns JSON only and writes no files.
 ---
 
 # Market Research Report
 
-Research **one asset** over **one ordered list of prediction horizons** and return a single
-JSON object conforming to `assets/market_report.schema.json` (schema_version "2"). The
-schema is authoritative; every object sets `additionalProperties: false`, so an invented
-field is invalid.
+Research one asset over an ordered, nonempty list of prediction timeframes. Return one JSON object that conforms to the embedded schema.
 
-The report is informational only, not financial advice.
+The report is informational only and is not financial advice.
 
 ## Inputs
 
-1. **Asset** *(required)* — anything with a quoted price. Supplied as `name`, `symbol`,
-   `asset_class` (`crypto` | `equity` | `etf` | `equity_index` | `commodity` | `fx` |
-   `rates` | `other`), `quote_currency`, `price_unit`.
+- `asset`: one unambiguous tradable asset.
+- `timeframes`: an ordered, nonempty list of horizons. Preserve each label and its order, and resolve it to one future UTC instant.
+- `research_areas` (optional): an ordered, nonempty list of short names with optional guidance. Preserve caller-supplied names and order. If omitted, derive the smallest useful set from the asset class, market structure, known price drivers, and requested horizons.
 
-2. **Timeframes** *(required)* — an ordered list of prediction horizons. **Accept any
-   phrasing that resolves to a single future UTC instant** — these are illustrations, not a
-   closed list:
-   - `next 5 hours`, `next 30 minutes`, `next 3 days`, `end of this week`
-   - `next Wednesday at 11:00 UTC`, `Friday close`
-   - `2026-08-20 14:00 UTC`, `2026-09-01`, `2026-09-01T09:30-04:00`
+Ask for clarification if the asset is ambiguous, an input is missing, a supplied research-area list is empty, or a timeframe cannot resolve to one future instant. Never invent, drop, merge, or reorder inputs.
 
-   If an entry is genuinely unresolvable, say which entry and why rather than guessing.
+## Research areas
 
-3. **Research areas** *(optional)* — the topics to investigate, as **short names** (a few
-   words each; the schema caps them at 80 characters). A caller may pair each name with
-   guidance text — the guidance steers the research but only the **short name** goes into
-   `research_areas` and findings.
-   - **Caller supplies a list** → use it verbatim, same order, one `research_findings`
-     entry per area. Never drop or merge an area: if one cannot be covered, still emit its
-     entry, say why in its `notes`, and add a `data_quality_notes` line. Set
-     `research_areas_source: "caller"` (also when you extended a partial caller list).
-   - **Caller supplies nothing** → derive a reasonable set for the asset class and set
-     `research_areas_source: "derived"`.
+Cover every selected area with a separate finding in `state.research_areas`. Each finding states what the evidence shows now, its likely price direction, and direct source URLs. An unsupported area fails the gauntlet; do not silently omit it.
 
-Stop and say so if the asset or the timeframes are missing. Do not invent an asset, and do
-not add, drop, or reorder horizons.
+When areas are not supplied, adapt these starting points rather than treating them as a fixed checklist:
 
-## Suggested research areas
+- Any asset: recent high-impact events, upcoming catalysts, macro conditions, price action, positioning and flows, sentiment, and current metrics.
+- Crypto: protocol changes, regulation, ETF flows, security incidents, supply cycles, on-chain holders, exchange reserves, funding, open interest, liquidations, and fear/greed.
+- Equity or ETF: earnings and guidance, valuation, analyst revisions, ownership flows, insider activity, short interest, corporate actions, sector performance, and underlying holdings for an ETF.
+- Equity index: macro releases, central-bank policy, heavyweight earnings, breadth, volatility, dealer positioning, futures positioning, and index or ETF flows.
+- Commodity, FX, or rates: inventories, production, quotas, or weather; rate differentials and intervention; auctions, issuance, and curve shape; positioning and implied volatility.
 
-Defaults for when the caller names none — adapt to the asset, drop what does not apply.
+## External bar and hard checks
 
-**Any asset** — recent high-impact events; upcoming catalysts (timing + probability);
-macro backdrop (rates, inflation, growth, the dollar, credit spreads, correlation);
-positioning and flows of the largest holders; sentiment (headline gauge + supporting
-reads); technical structure (trend, support/resistance, volatility, liquidity).
+Before research, set one named, fetchable, comparable external bar: a professional analyst report or published forecast methodology appropriate to the asset class and horizons. Use a caller-supplied reference when available; otherwise the lead selects the strongest accessible one and records it in the internal dossier. Open the real artifact during this run and compare against it directly, not against a description. If no valid bar is accessible, do not claim Gauntlet completion.
 
-**crypto** — protocol upgrades and forks; regulatory actions; spot-ETF flows, approvals,
-listings; exchange outages and security incidents; unlock schedules and halving cycles;
-on-chain whale transfers, exchange reserves, miner and long-term-holder behaviour; funding
-rates, open interest, liquidations; Crypto Fear & Greed.
+The external comparison does not replace these hard checks. The report also passes only if:
 
-**equity / etf** — earnings dates, results, guidance; analyst revisions; short interest;
-lockups, splits, dividends, offerings; index inclusion; sector-relative performance; 13F
-filings, insider transactions, buybacks; for an ETF also its underlying, tracking
-difference and premium/discount.
+- It has exactly the four top-level fields in the schema.
+- It has one prediction per requested timeframe, in the same order.
+- It has one finding per selected research area, in the same order.
+- Every URL was opened during this run and its exact supporting passage, table, or observation was inspected in context.
+- The current price is confirmed by two independent providers on different hostnames, fetched within 15 minutes of final assembly. If they differ by more than 1%, inspect a third provider and require two to agree within 1%.
+- A closed-market price is identified as the latest close, never as a live price.
+- Every horizon is in the future, every target is inside its range, and every event is relevant by that horizon and backed by a direct source.
+- Every numeric forecast comes from a reproducible internal calculation using opened data, explicit assumptions, competing scenarios, and an asset-appropriate base rate or method.
+- The final response is valid JSON with no surrounding commentary.
 
-**equity_index** — central-bank decisions and macro prints; heavyweight earnings; index
-rebalances; quad witching and option expiry; Treasury auctions and fiscal deadlines; CFTC
-Commitment of Traders positioning; ETF creations/redemptions; dealer gamma; CNN Fear &
-Greed, VIX term structure, put/call, breadth.
+## Gauntlet loop
 
-**commodity / fx / rates** — inventories, quotas, weather (commodity); rate differentials,
-intervention risk, carry (fx); auctions, curve shape, issuance (rates); CFTC positioning
-and implied volatility for sentiment.
+1. The lead agent splits the work into current price and state, horizon resolution, each selected research area, numerical forecast construction, and final synthesis.
+2. A separate researcher builds each area from primary sources. Search snippets, inaccessible landing pages, and another agent's summary are not evidence.
+3. Give every completed unit, including price and state, horizon resolution, and each research area, to its own fresh-context harsh critic. The critic independently opens the sources and returns `PASS`, or `FAIL` with the single biggest concrete gap. Route a failure back to that unit's builder, then use a new critic.
+4. A prediction builder uses only the passed evidence dossier. It records internal assumptions, inputs, arithmetic, base rates, contradictory evidence, and probability-weighted scenarios. `target_price` is the scenario-weighted central result; `target_range` contains the plausible scenario outcomes.
+5. A separate confidence critic, with no builder deliberation, assigns each `confidence_score` as the estimated probability that the realized price at `horizon_end_utc` falls inside `target_range`. It must reproduce the score from an internal ledger covering historical calibration or backtests when available, method validation, evidence freshness, independent leading indicators, contradictions, volatility, regime stability, event uncertainty, and horizon length. The range must remain informative relative to historical volatility; never widen it merely to inflate confidence. Lower any score the critic cannot reproduce.
+6. A fresh harsh forecast critic compares the actual internal forecast packet with the external bar side by side and blind where practical. It chooses which is stronger for evidence rigor, asset-driver coverage, reproducibility, and uncertainty calibration. A tie or a win by the bar is `FAIL`; it returns the single biggest gap to the builder.
+7. A separate assembler builds the JSON. A final fresh critic inspects it against the schema and all hard checks, then returns `PASS` or `FAIL` with only the single biggest concrete gap. Send that gap to the responsible builder and repeat with a new critic.
+8. Keep looping with no fixed round count until every unit and the final report pass, or the user stops. If required evidence remains inaccessible after materially different retrieval paths, stop and report the blocker instead of emitting a report that appears to have passed.
 
-## Research method
+Report quality and forecast confidence are separate. A supported low-confidence forecast can pass. `confidence_score` is range-coverage probability, not the probability of hitting the exact target and not a report-quality score. Current-price agreement alone does not increase it. High confidence requires asset-relevant historical calibration, multiple independent leading indicators, and stable assumptions. Never raise confidence merely to pass the quality gate.
 
-Use whatever web search and fetch tools this host provides, and check what works before
-relying on it. Prefer directly accessed primary sources over search-result summaries. Log
-every failed attempt in `sources.access_failed` with its UTC time and reason. **Never
-fabricate a source, a price, or a retrieval time.**
+For each event, `probability_pct` is the chance that the event occurs as described before the horizon. Use `expected_at_utc: null` only when a source gives a time window rather than an instant, and state the window in `impact_summary`. Use an empty event list when no relevant event is supported.
 
-Regardless of the research areas, always establish:
+Research notes, failed retrievals, calculations, benchmark details, and criticism remain internal. Never fabricate a source, price, timestamp, event, or probability. The gauntlet improves research rigor and confidence calibration; it cannot guarantee that a future price prediction will be correct.
 
-- **Current level** — price from a primary source *and* an independent cross-check on a
-  different provider and hostname, both retrieved within 15 minutes of generation. If no
-  second vendor quotes the same instrument, cross-check a tracking ETF or front-month
-  future, set `price_cross_check_instrument` and `price_cross_check_is_proxy: true`, and
-  explain the basis in `data_quality_notes`.
-- **Market status** — `open`, `closed`, `pre_market` or `after_hours` right now. When not
-  open, set `last_close_utc` and `next_open_utc` (the schema enforces this), and use the
-  last session close as `price_observed_at_utc`. Never present a stale close as a live
-  tick.
-- **Price action** — a short and a long window, each named in its `window_label`, each with
-  the likely reasons for the movement.
+In Claude Code:
 
-Fill one `research_findings` entry per area, in order: `summary`, discrete `observations`,
-citations; numeric or dated readings go in `data_points`. When a sentiment area yields a
-headline gauge, also fill the top-level `sentiment_index` with its scale declared
-explicitly.
+`/loop` until every critic passes.
 
-Every finding, observation and prediction must cite URLs listed in
-`sources.successfully_accessed`. Include only claims the accessed source directly supports.
-Distinguish observed facts, probability assessments and assumptions; state uncertainty
-instead of inferring past it.
+Fan out subagents and ultracode.
 
-## Predictions and confidence
+## Portability
 
-For each timeframe, in order, give a probability-weighted prediction:
+`/loop` and `ultracode` are Claude Code features. `/loop` reruns a prompt until you stop it, and `ultracode` opts a turn into multi-agent orchestration.
 
-- `timeframe_id` — lowercase the entry, replace each run of non-alphanumeric characters
-  with `_`, trim leading and trailing `_`.
-- `timeframe_label` — the entry text exactly, optionally plus one parenthesized annotation.
-- `horizon_end_utc` — the resolved UTC cutoff, after `generated_at_utc`. Ambiguous entries
-  take the **nearest future occurrence**; date-only entries take 23:59:59 UTC; market
-  moments ("Friday close") take that venue's actual session boundary; non-UTC offsets are
-  converted. Record every judgement call in `notes`.
-- **`baseline_price`** — the price the move is measured FROM: normally
-  `metadata.asset_price`; the last regular-session close when the market is closed; any
-  other baseline must be explained in `notes`. `predicted_move_pct` means
-  `((price at horizon) − baseline_price) / baseline_price × 100`, resolved at the last
-  available print if the venue is closed at the horizon.
-- Scenarios: each states one numeric `expected_move_pct`; probabilities total 100 (within
-  0.5); `predicted_move_pct` equals the probability-weighted mean within **0.05
-  percentage points and with the same sign**; any `range_pct` has `min ≤ predicted ≤ max`.
-- Confidence: each timeframe is scored 0–100 against a fixed rubric — evidence freshness,
-  agreement between independent sources, research-area coverage, and horizon ambiguity —
-  by the **confidence critic**, never by the agent that built the prediction (see Agent
-  workflow below). Scores below 60 trigger the improvement loop. **Never inflate a score
-  to exceed 60** — an honest low score with the gap described is correct; a padded 60 is
-  not. When nothing is below 60, set `triggered: false` and state the basis in `notes`.
+For any other agent, swap the last two instructions for: "Keep looping until the critic passes ours. Run the builders and critics as parallel subagents." The structure carries over unchanged.
 
-## Agent workflow — the gauntlet
+## Output schema
 
-When the host can spawn subagents, run the work as a gauntlet: split it into judgeable
-pieces, give every judgement a concrete bar, never let a builder grade its own work, and
-keep builder and critic in separate, fresh contexts.
+This Draft 2020-12 JSON Schema is authoritative:
 
-1. **Plan the research.** One planner agent maps every research area against every
-   timeframe and writes the evidence plan: what must be known, per area, for each horizon.
-   A 5-hour horizon needs the intraday tape and imminent catalysts; a multi-day horizon
-   needs the event calendar through its cutoff.
-2. **Fan out researchers.** One researcher per area executes its slice of the plan and
-   returns findings with citations. Researchers run in parallel and do not see each
-   other's conclusions.
-3. **Reason to predictions.** A single reasoning agent — the builder — takes the assembled
-   evidence dossier and produces every prediction: baseline, scenarios, weighted
-   arithmetic, one per timeframe, in order. **It does not score its own confidence.**
-4. **Blind confidence critic.** A fresh-context critic receives only the evidence dossier
-   and the draft predictions — none of the reasoner's deliberation or justifications. It
-   scores each timeframe 0–100 against the rubric, asking: *would this prediction survive
-   an independent audit on this evidence alone?* Its first-pass scores are recorded
-   verbatim as `confidence_protocol.initial_confidence_scores`.
-5. **The gate.** Every score ≥ 60 → go to assembly. Any score < 60 → set
-   `triggered: true`; the critic must name the **single biggest evidence gap** per weak
-   timeframe — a named, fetchable thing ("no second source for the ETF flow figure",
-   "funding data is 3 days stale"), never "research more".
-6. **Improvement plan → execution.** A fresh planner turns the named gaps into concrete
-   retrieval steps; executor agents carry them out; every executed step is recorded in
-   `plan_executed`.
-7. **Loop.** The reasoning agent re-evaluates its predictions with the new evidence, and a
-   **fresh critic instance** re-scores. At most **2 improvement rounds**; after that,
-   deliver with the scores as they honestly stand and the unresolved gaps described in the
-   prediction `notes` and `data_quality_notes`. The critic owns the scores — the reasoner
-   can never raise one, and nobody rounds a 58 up to pass the gate. The loop exists to
-   improve the *evidence*, not the number.
-8. **Assemble and verify.** One assembler agent builds the final JSON from the pieces and
-   runs the entire **Verify before returning** section below on the assembled result — the
-   smoothing pass. Never concatenate fragments from parallel agents into the output
-   without this final single-point verification.
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Market Research Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asset", "current_price", "state", "predictions"],
+  "properties": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "symbol", "asset_class", "quote_currency"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "symbol": { "type": "string", "minLength": 1 },
+        "asset_class": {
+          "type": "string",
+          "enum": ["crypto", "equity", "etf", "equity_index", "commodity", "fx", "rates", "other"]
+        },
+        "quote_currency": { "type": "string", "minLength": 1 }
+      }
+    },
+    "current_price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "observed_at_utc", "source_urls"],
+      "properties": {
+        "value": { "type": "number", "exclusiveMinimum": 0 },
+        "observed_at_utc": { "$ref": "#/$defs/utc" },
+        "source_urls": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/url" }
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["market_status", "summary", "research_areas"],
+      "properties": {
+        "market_status": {
+          "type": "string",
+          "enum": ["open", "closed", "pre_market", "after_hours"]
+        },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "research_areas": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/research_area" }
+        }
+      }
+    },
+    "predictions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["timeframe", "horizon_end_utc", "target_price", "target_range", "confidence_score", "upcoming_events"],
+        "properties": {
+          "timeframe": { "type": "string", "minLength": 1 },
+          "horizon_end_utc": { "$ref": "#/$defs/utc" },
+          "target_price": { "type": "number", "exclusiveMinimum": 0 },
+          "target_range": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["low", "high"],
+            "properties": {
+              "low": { "type": "number", "exclusiveMinimum": 0 },
+              "high": { "type": "number", "exclusiveMinimum": 0 }
+            }
+          },
+          "confidence_score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Estimated probability, in percent, that the realized price at horizon_end_utc falls within target_range."
+          },
+          "upcoming_events": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/event" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "research_area": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["area", "summary", "impact_direction", "source_urls"],
+      "properties": {
+        "area": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "impact_direction": {
+          "type": "string",
+          "enum": ["positive", "negative", "mixed"]
+        },
+        "source_urls": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/url" }
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "expected_at_utc", "probability_pct", "impact_direction", "impact_summary", "source_url"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "expected_at_utc": {
+          "oneOf": [
+            { "$ref": "#/$defs/utc" },
+            { "type": "null" }
+          ]
+        },
+        "probability_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "impact_direction": {
+          "type": "string",
+          "enum": ["positive", "negative", "mixed"]
+        },
+        "impact_summary": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "source_url": { "$ref": "#/$defs/url" }
+      }
+    }
+  }
+}
+```
 
-**Single-agent fallback.** If the host cannot spawn subagents, play the roles in sequence
-while keeping their discipline: plan before researching; research before reasoning; write
-the confidence critique from the evidence alone, before re-reading your own prediction
-rationale; and score before you argue with the score.
-
-## Verify before returning — mandatory
-
-The assembler agent — or the single agent in fallback mode — must run these checks on the
-final result before it is returned. Do this even under time pressure; a report that fails
-them must be fixed, not returned.
-
-1. **Recompute the arithmetic** for every prediction, from the actual numbers in your
-   draft: scenario probabilities sum to 100 ± 0.5; `Σ(probability × move) / 100` matches
-   `predicted_move_pct` within 0.05pp **and in sign** — if they disagree, the weighted mean
-   wins: recompute `predicted_move_pct` from the scenarios, never adjust a scenario to
-   rescue a headline number; `range_pct.min ≤ predicted_move_pct ≤ range_pct.max`.
-2. **Check the correspondences**: `predictions[i]` ↔ `request.timeframes[i]` (slug match,
-   same order); `research_findings[i].area` == `request.research_areas[i]` (same order);
-   every cited URL present in `sources.successfully_accessed`.
-3. **Check the invariants**: `executive_summary.asset_price` == `metadata.asset_price`;
-   `report_date_utc` matches the date of `generated_at_utc`; every timestamp has an
-   explicit zero UTC offset; `horizon_end_utc` after `generated_at_utc`;
-   `metadata.schema_version` is `"2"`.
-4. **Validate against the schema** when Python is available, without writing any file:
-
-   ```bash
-   python3 -c "import json,sys,jsonschema; jsonschema.validate(json.loads(sys.stdin.read()), json.load(open('SCHEMA_PATH')))" <<'JSON'
-   { ...your draft... }
-   JSON
-   ```
-
-   where `SCHEMA_PATH` is this skill's `assets/market_report.schema.json`. Fix every
-   reported error and re-validate — up to 3 rounds. If it still fails, return the error
-   list instead of a non-conforming object.
+Before returning, inspect the assembled object against every schema rule and hard check. Also verify the requested order of predictions and research areas, and `target_range.low <= target_price <= target_range.high`, because JSON Schema cannot express these cross-field checks directly.
 
 ## Output
 
-Return the JSON object itself — no file writes, no HTML, no commentary wrapped around it.
-Echo the inputs verbatim into `metadata.request` so the document is self-describing.
-Percentages are plain numbers (`1.5` = +1.5%); prices are in the asset's `quote_currency`,
-or plain points for an index.
+For a completed report, return only the report object as valid JSON. Do not add a Markdown fence, preamble, explanation, or trailing commentary. Do not write the report to a file. A preflight clarification or an irreducible blocker is not a completed report; return it as concise text and do not emit report-shaped JSON.
